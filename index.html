@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu Tiên Ký</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap">
+<style>
+:root{--bg:#e8eeeb;--panel:#f5f8f6;--ink:#1c2b29;--mute:#5d716d;--jade:#2e7d6c;--gold:#a8812e;--seal:#a63a32;--line:#c5d2cd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a19;--panel:#182523;--ink:#e3ece9;--mute:#8fa5a0;--jade:#4fb89f;--gold:#d2a94b;--seal:#e0685e;--line:#2c3f3c}}
+:root[data-theme="dark"]{--bg:#101a19;--panel:#182523;--ink:#e3ece9;--mute:#8fa5a0;--jade:#4fb89f;--gold:#d2a94b;--seal:#e0685e;--line:#2c3f3c}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Serif",Georgia,"Times New Roman",serif;line-height:1.55}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 0 16px}
+.ring{--p:0;width:190px;height:190px;border-radius:50%;display:grid;place-items:center;
+background:conic-gradient(var(--jade) calc(var(--p)*1%),var(--line) 0)}
+.ring>div{width:164px;height:164px;border-radius:50%;background:var(--bg);display:grid;place-content:center;padding:8px}
+.realm{font-size:26px;font-weight:700;line-height:1.2}
+.sub{font-size:13px;color:var(--mute)}
+.root{margin-top:10px;font-size:14px;color:var(--gold)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 14px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.stat b{display:block;font-size:18px}
+.stat span{font-size:12px;color:var(--mute)}
+.life{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.life i{display:block;height:100%;background:var(--seal);width:0}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit;font-size:15px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:11px 8px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--jade)}
+button:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+button.main{grid-column:1/-1;background:var(--jade);color:#fff;border-color:var(--jade);font-weight:700}
+button.seal{background:var(--seal);color:#fff;border-color:var(--seal);font-weight:700}
+.on{border-color:var(--jade);box-shadow:inset 0 0 0 1px var(--jade)}
+#log{margin-top:18px;border-top:1px solid var(--line);padding-top:10px;font-size:14px;max-height:300px;overflow-y:auto}
+#log p{margin:0 0 6px}
+#log .g{color:var(--jade)}#log .b{color:var(--seal)}#log .y{color:var(--gold)}
+.foot{margin-top:14px;font-size:12px;color:var(--mute);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.foot button{font-size:12px;padding:4px 8px}
+@media (prefers-reduced-motion:no-preference){.ring{transition:background .2s}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+<div class="ring" id="ring"><div><div class="realm" id="realm"></div><div class="sub" id="qi"></div></div></div>
+<div class="root" id="root"></div>
+</section>
+<div class="stats">
+<div class="stat"><b id="age"></b><span>Tuổi</span></div>
+<div class="stat"><b id="stone"></b><span>Linh thạch</span></div>
+<div class="stat"><b id="legacy"></b><span>Đạo duyên (kiếp <span id="gen"></span>)</span></div>
+</div>
+<div class="life" title="Thọ nguyên"><i id="lifebar"></i></div>
+<div class="sub" id="inv" style="margin:-6px 0 12px"></div>
+<div class="acts">
+<button class="main" id="bCult">Tu luyện (1 tháng)</button>
+<button id="bYear">Bế quan (1 năm)</button>
+<button id="bExp">Thám hiểm (3 tháng)</button>
+<button id="bAuto">Tự động tu luyện: tắt</button>
+<button id="bStone">Dùng linh thạch hộ pháp</button>
+<button id="bPlant">Thúc linh thảo bằng bình (6 tháng)</button>
+<button id="bAlch">Luyện đan (3 linh thảo)</button>
+<button id="bPill" style="grid-column:1/-1">Uống đan dược</button>
+<button class="seal" id="bBreak" style="grid-column:1/-1">Đột phá</button>
+</div>
+<div id="log"></div>
+<div class="foot"><span>Mỗi điểm đạo duyên tăng 5% tốc độ tu luyện ở kiếp sau.</span><button id="bReset">Chơi lại từ đầu</button></div>
+</main>
+<script>
+const REALMS=["Luyện Khí","Trúc Cơ","Kết Đan","Nguyên Anh","Hóa Thần","Phi Thăng"];
+const LIFE=[80,160,320,640,1280,9999];
+const CHANCE=[.7,.6,.5,.4,.3];
+const ROOTS=[["Kim linh căn",1.1],["Mộc linh căn",1.1],["Thủy linh căn",1.1],["Hỏa linh căn",1.2],["Thổ linh căn",1.0],["Phế linh căn",.6],["Song linh căn",1.4],["Thiên linh căn",2.0]];
+const KEY="tutien_save_v1";
+let S,auto=null;
+const $=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n);
+
+function newLife(legacy,gen){
+  const r=ROOTS[Math.random()<.04?7:rnd(7)];
+  return {m:16*12,realm:0,qi:0,stone:0,herb:0,pill:0,alch:0,boost:0,root:r[0],mult:r[1],legacy:legacy,gen:gen,life:LIFE[0],dead:false,log:[]};
+}
+function load(){try{const v=localStorage.getItem(KEY);if(v)return JSON.parse(v)}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function say(t,c){S.log.unshift({t:t,c:c||""});S.log=S.log.slice(0,40)}
+const need=()=>100*Math.pow(4,S.realm);
+const gain=()=>Math.max(1,Math.round(4*Math.pow(3,S.realm)*S.mult*(1+.05*S.legacy)));
+const age=()=>Math.floor(S.m/12);
+
+function advance(months){
+  S.m+=months;
+  if(age()>=S.life)die();
+}
+function die(){
+  stopAuto();
+  S.dead=true;
+  const pts=S.realm*3+1;
+  say("Thọ nguyên cạn kiệt, ngươi tọa hóa ở tuổi "+age()+" với cảnh giới "+REALMS[S.realm]+". Nhận "+pts+" đạo duyên.","b");
+  S.legacy+=pts;
+}
+function reborn(){
+  const L=S.legacy,G=S.gen+1;
+  S=newLife(L,G);
+  say("Chuyển thế luân hồi, kiếp thứ "+G+". Ngươi sinh ra với "+S.root+".","y");
+  render();save();
+}
+function cult(months){
+  if(S.dead)return;
+  const max=need();
+  if(S.realm>=5)return;
+  if(S.qi>=max){say("Tu vi đã viên mãn, hãy thử đột phá.","y");stopAuto();return}
+  S.qi=Math.min(max,S.qi+gain()*months);
+  advance(months);
+  if(!S.dead&&S.qi>=max){say("Linh khí đã đầy, có thể đột phá "+REALMS[S.realm+1]+".","g");stopAuto()}
+}
+const EVENTS=[
+ ()=>{const q=gain()*6;S.qi=Math.min(need(),S.qi+q);say("Hái được một gốc linh thảo trăm năm, tu vi tăng "+q+".","g")},
+ ()=>{const n=1+rnd(3);S.stone+=n;say("Nhặt được "+n+" khối linh thạch bên khe suối.","g")},
+ ()=>{if(Math.random()<.5+S.realm*.05){S.stone+=2;say("Chém giết yêu thú, thu được 2 linh thạch.","g")}else{S.qi=Math.floor(S.qi*.8);say("Bị yêu thú đánh trọng thương, hao tổn 20% tu vi.","b")}},
+ ()=>{S.life+=10;say("Gặp một vị cao nhân chỉ điểm, thọ nguyên tăng thêm 10 năm.","y")},
+ ()=>{const q=gain()*20;S.qi=Math.min(need(),S.qi+q);say("Tình cờ phát hiện một bí cảnh, thu hoạch rất lớn: tu vi tăng "+q+".","y")},
+ ()=>{if(S.stone>0){S.stone--;say("Bị tu sĩ cướp đường, mất 1 linh thạch.","b")}else{S.m+=12;say("Bị truy sát, phải ẩn náu suốt một năm.","b")}},
+ ()=>say("Đi cả tháng trời, chỉ thấy núi non trùng điệp."),
+ ()=>{const n=1+rnd(2);S.herb+=n;say("Phát hiện linh thảo mọc trên vách núi, hái được "+n+" gốc.","g")},
+ ()=>{if(Math.random()<.75){S.stone+=3;S.pill++;say("Bắt gặp một tu sĩ lạc đơn, ra tay đoạt túi trữ vật: 3 linh thạch và 1 viên đan dược.","y")}else{S.qi=Math.floor(S.qi*.7);S.m+=12;say("Tưởng là con mồi, hóa ra là kẻ có chống lưng. Ngươi trốn chạy suốt một năm, mất 30% tu vi.","b")}}
+];
+function explore(){
+  if(S.dead)return;
+  EVENTS[rnd(EVENTS.length)]();
+  advance(3);
+}
+function useStone(){
+  if(S.dead||S.stone<1||S.boost>=3)return;
+  S.stone--;S.boost++;
+  say("Bày linh thạch hộ pháp, xác suất đột phá +10%.","g");
+}
+function breakthrough(){
+  if(S.dead||S.qi<need())return;
+  const p=Math.min(.95,CHANCE[S.realm]+.1*S.boost+.01*S.legacy);
+  S.boost=0;
+  if(Math.random()<p){
+    S.realm++;S.qi=0;
+    S.life=Math.max(S.life,LIFE[S.realm]);
+    if(S.realm===5){
+      const pts=15;S.legacy+=pts;
+      say("Thiên kiếp giáng xuống, ngươi vượt qua tất cả và phi thăng tiên giới! Nhận "+pts+" đạo duyên. Bắt đầu kiếp mới để tiếp tục.","y");
+      S.dead=true;stopAuto();
+    }else say("Đột phá thành công! Ngươi đã đạt cảnh giới "+REALMS[S.realm]+".","y");
+  }else{
+    S.qi=Math.floor(S.qi*.6);S.m+=24;
+    say("Đột phá thất bại (xác suất "+Math.round(p*100)+"%), tâm ma xâm nhập, mất 40% tu vi và hao tổn 2 năm thọ nguyên.","b");
+    if(age()>=S.life)die();
+  }
+}
+function plant(){
+  if(S.dead)return;
+  S.herb+=2;
+  say("Nhỏ vài giọt dịch từ chiếc bình nhỏ, sáu tháng sau thu được 2 gốc linh thảo.","g");
+  advance(6);
+}
+function alchemy(){
+  if(S.dead||S.herb<3)return;
+  S.herb-=3;
+  const p=Math.min(.9,.5+.05*S.alch);
+  if(Math.random()<p){S.pill++;S.alch++;say("Luyện đan thành công, được 1 viên đan dược (xác suất "+Math.round(p*100)+"%).","g")}
+  else say("Lò đan nổ tung, mất 3 gốc linh thảo (xác suất "+Math.round(p*100)+"%).","b");
+  advance(2);
+}
+function eatPill(){
+  if(S.dead||S.pill<1||S.realm>=5||S.qi>=need())return;
+  S.pill--;
+  const q=gain()*15;
+  S.qi=Math.min(need(),S.qi+q);
+  say("Uống đan dược, tu vi tăng "+q+".","g");
+}
+function stopAuto(){if(auto){clearInterval(auto);auto=null}}
+function toggleAuto(){
+  if(auto){stopAuto()}else if(!S.dead){auto=setInterval(()=>{cult(1);render();save()},600)}
+  render();
+}
+function render(){
+  const dead=S.dead,max=S.realm<5?need():1;
+  $("realm").textContent=REALMS[S.realm];
+  $("qi").textContent=S.realm<5?"Tu vi "+Math.floor(S.qi)+" / "+max:"Đã phi thăng";
+  $("ring").style.setProperty("--p",S.realm<5?Math.min(100,S.qi/max*100):100);
+  $("root").textContent=S.root+" (x"+S.mult+")";
+  $("age").textContent=age()+" / "+(S.life>=9999?"∞":S.life);
+  $("stone").textContent=S.stone;
+  $("legacy").textContent=S.legacy;
+  $("gen").textContent=S.gen;
+  $("lifebar").style.width=Math.min(100,age()/S.life*100)+"%";
+  const full=S.qi>=max&&S.realm<5;
+  $("bCult").disabled=dead||full||S.realm>=5;
+  $("bYear").disabled=dead||full||S.realm>=5;
+  $("bExp").disabled=dead;
+  $("bPlant").disabled=dead;
+  $("bAlch").disabled=dead||S.herb<3;
+  $("bPill").disabled=dead||S.pill<1||full||S.realm>=5;
+  $("inv").textContent="Linh thảo: "+S.herb+", đan dược: "+S.pill+", kinh nghiệm luyện đan: "+S.alch;
+  $("bAuto").disabled=dead;
+  $("bAuto").textContent="Tự động tu luyện: "+(auto?"bật":"tắt");
+  $("bAuto").className=auto?"on":"";
+  $("bStone").disabled=dead||S.stone<1||S.boost>=3;
+  $("bStone").textContent="Linh thạch hộ pháp ("+S.boost+"/3)";
+  const p=S.realm<5?Math.min(95,Math.round((CHANCE[S.realm]+.1*S.boost+.01*S.legacy)*100)):0;
+  $("bBreak").textContent=dead?"Chuyển thế luân hồi":"Đột phá"+(S.realm<5?" ("+p+"%)":"");
+  $("bBreak").disabled=!dead&&!full;
+  $("log").innerHTML=S.log.map(l=>'<p class="'+l.c+'">'+l.t+'</p>').join("");
+}
+$("bCult").onclick=()=>{cult(1);render();save()};
+$("bYear").onclick=()=>{cult(12);render();save()};
+$("bExp").onclick=()=>{explore();render();save()};
+$("bAuto").onclick=toggleAuto;
+$("bPlant").onclick=()=>{plant();render();save()};
+$("bAlch").onclick=()=>{alchemy();render();save()};
+$("bPill").onclick=()=>{eatPill();render();save()};
+$("bStone").onclick=()=>{useStone();render();save()};
+$("bBreak").onclick=()=>{if(S.dead)reborn();else{breakthrough();render();save()}};
+$("bReset").onclick=()=>{if(confirm("Xóa toàn bộ tiến trình và chơi lại từ đầu?")){stopAuto();S=newLife(0,1);say("Một đời tu tiên mới bắt đầu. Ngươi sinh ra với "+S.root+".","y");render();save()}};
+S=load();
+if(!S||!S.root||S.herb===undefined){S=newLife(0,1);say("Ngươi là một thiếu niên 16 tuổi tư chất tầm thường, sinh ra với "+S.root+". Trong tay có một chiếc bình nhỏ màu xanh kỳ lạ, có thể thúc linh thảo mau lớn. Hãy sống sót và tu tiên.","y")}
+render();
+</script>
+</body>
+</html>
