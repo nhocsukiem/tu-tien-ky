@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div id="fx" hidden><div class="fxbox"><div id="fxart"></div><div id="fxcap"></div><div id="fxres" hidden><img id="fxim" alt="Kết quả"><div id="fxt"></div><div id="fxl"></div><button class="main" id="fxok">Thu nhận</button></div></div></div>
+<div id="tribu" hidden><canvas id="tcv"></canvas><div id="ttxt"></div></div>
 <div id="ev" hidden><div class="card">
 <div class="evh">Cơ duyên ngẫu nhiên</div>
 <div class="evt" id="evT"></div>
@@ -15,7 +17,7 @@
 </div>
 <div id="roll" hidden>
 <div class="sub">Kiếp thứ <span id="rGen"></span><span id="rN" hidden></span></div>
-<input id="nameIn" maxlength="20" placeholder="Đặt tên nhân vật" autocomplete="off">
+<input id="nameIn" maxlength="20" placeholder="Đặt tên nhân vật (bắt buộc)" autocomplete="off">
 <div class="big" id="rRoot"></div>
 <div class="root" id="rTal"></div>
 <div class="sub" id="rMult"></div>
@@ -47,10 +49,11 @@
 <button id="bExp">Thám hiểm (3 tháng)</button>
 
 <button id="bStone">Dùng linh thạch hộ pháp</button>
-<button id="bPlant">Thúc linh thảo bằng bình (6 tháng)</button>
-<button id="bAlch">Luyện đan (3 linh thảo)</button>
-<button id="bPill" style="grid-column:1/-1">Uống đan dược</button>
-<button id="bHealP">Chữa thương bằng đan dược (khỏi hẳn)</button>
+<button id="bPlant">Thúc linh thảo bằng bình</button>
+<button id="bAlch">Luyện Tụ Linh Đan (3 linh thảo, tăng tu vi)</button>
+<button id="bAlchH">Luyện Hồi Thương Đan (3 linh thảo, chữa thương)</button>
+<button id="bPill" style="grid-column:1/-1">Uống Tụ Linh Đan, tăng tu vi</button>
+<button id="bHealP">Uống Hồi Thương Đan, chữa khỏi hẳn</button>
 <button id="bHealS">Chữa thương bằng 2 linh thạch (giảm một bậc)</button>
 <button class="seal" id="bBreak" style="grid-column:1/-1">Đột phá</button>
 </div>
@@ -60,6 +63,7 @@
 </main>
 <script src="js/character.js"></script>
 <script src="js/events.js"></script>
+<script src="js/alchemy.js"></script>
 <script src="js/game.js"></script>
 </body>
 </html>

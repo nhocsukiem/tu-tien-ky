@@ -60,26 +60,47 @@ function breakthrough(){
     if(age()>=S.life)die();
   }
 }
-function plant(){
-  if(S.dead)return;
-  S.herb+=2;
-  say("Nhỏ vài giọt dịch từ chiếc bình nhỏ, sáu tháng sau thu được 2 gốc linh thảo.","g");
-  advance(6);
-}
-function alchemy(){
-  if(S.dead||S.herb<3)return;
-  S.herb-=3;
-  const p=Math.min(.9,.5+.05*S.alch);
-  if(Math.random()<p){S.pill++;S.alch++;say("Luyện đan thành công, được 1 viên đan dược (xác suất "+Math.round(p*100)+"%).","g")}
-  else say("Lò đan nổ tung, mất 3 gốc linh thảo (xác suất "+Math.round(p*100)+"%).","b");
-  advance(2);
-}
 function eatPill(){
   if(S.dead||S.pill<1||S.realm>=TOP||S.qi>=need())return;
   S.pill--;
   const q=gain()*15;
   S.qi=Math.min(need(),S.qi+q);
-  say("Uống đan dược, tu vi tăng "+q+".","g");
+  say("Uống Tụ Linh Đan, tu vi tăng "+q+".","g");
+}
+let tribuOn=false;
+function tribulation(){
+  const ov=$('tribu'),cv=$('tcv'),tx=$('ttxt'),g=cv.getContext('2d');
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const W=cv.width=innerWidth,H=cv.height=innerHeight;
+  const n=Math.min(10,2+S.realm);
+  let flash=0,i=0,col='150,200,255',run=true;
+  ov.hidden=false;ov.className=reduce?'':'shake';
+  tx.textContent='Mây kiếp tụ lại trên đầu ngươi...';
+  function glow(p,w){g.save();g.lineJoin='round';g.shadowColor='rgb('+col+')';g.shadowBlur=24;g.strokeStyle='#fff';g.lineWidth=w;g.beginPath();g.moveTo(p[0][0],p[0][1]);p.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.stroke();g.restore()}
+  function strike(){
+    const pts=[[W*(.15+Math.random()*.7),0]];let y=0,x=pts[0][0];
+    while(y<H*.9){y+=H*(.04+Math.random()*.06);x+=(Math.random()-.5)*W*.12;pts.push([x,y])}
+    glow(pts,3.5);
+    for(let b=0;b<3;b++){const s=pts[1+rnd(pts.length-2)],br=[s];let bx=s[0],by=s[1];for(let k=0;k<4;k++){bx+=(Math.random()-.5)*W*.14;by+=H*.05;br.push([bx,by])}glow(br,1.6)}
+    flash=reduce?.2:.7;
+  }
+  function frame(){
+    g.fillStyle='rgba(5,8,14,.18)';g.fillRect(0,0,W,H);
+    for(let c=0;c<5;c++){const cx=W*(c/4),r=Math.max(W,H)*.35,gr=g.createRadialGradient(cx,0,0,cx,0,r);gr.addColorStop(0,'rgba(60,70,95,.12)');gr.addColorStop(1,'rgba(60,70,95,0)');g.fillStyle=gr;g.fillRect(0,0,W,H)}
+    if(flash>0){g.fillStyle='rgba('+col+','+flash+')';g.fillRect(0,0,W,H);flash*=.85;if(flash<.02)flash=0}
+    if(run)requestAnimationFrame(frame);
+  }
+  g.fillStyle='#05080e';g.fillRect(0,0,W,H);frame();
+  const t=setInterval(()=>{
+    if(i<n){i++;tx.textContent='Lôi kiếp giáng xuống! Đạo '+i+'/'+n;strike()}
+    else{clearInterval(t);setTimeout(finish,500)}
+  },reduce?450:650);
+  function finish(){
+    const before=S.realm;breakthrough();const ok=S.realm>before;
+    col=ok?'255,215,120':'255,70,60';flash=ok?.9:.8;
+    tx.textContent=ok?'Đột phá thành công: '+REALMS[S.realm]+'!':'Đột phá thất bại...';
+    setTimeout(()=>{run=false;ov.hidden=true;tribuOn=false;render();save();startAuto()},reduce?900:1700);
+  }
 }
 let rt=null,resetArm=false;
 function stopRoll(){if(rt){clearInterval(rt);rt=null}}
@@ -90,7 +111,7 @@ function toggleRoll(){
   render();
 }
 function startLife(){
-  S.name=($("nameIn").value.trim()||"Vô Danh").slice(0,20);stopRoll();S.rolling=false;setTimeout(startAuto,0);
+  S.name=$("nameIn").value.trim().slice(0,20);if(!S.name)return;stopRoll();S.rolling=false;setTimeout(startAuto,0);
   say(S.name+" là thiếu niên 16 tuổi, sinh ra với "+S.root+", thể chất "+S.tname+" (x"+S.mult+"). Trong tay có chiếc bình nhỏ màu xanh kỳ lạ, có thể thúc linh thảo mau lớn. Hãy sống sót và tu tiên.","y");
   render();save();
 }
@@ -111,7 +132,7 @@ function render(){
   $("rMult").textContent=S.rolled?"Tốc độ tu luyện x"+S.mult+(NOTE[S.tname]?". "+NOTE[S.tname]:"")+(S.tl?" Kết Đan không có bình cảnh.":""):"Hãy chọn linh căn và thể chất của ngươi.";
   $("rAuto").textContent=S.rolled?"Đã chọn":"Chọn linh căn và thể chất";
   $("rAuto").disabled=S.rolled;
-  $("rGo").disabled=!S.rolled;
+  $("rGo").disabled=!S.rolled||!$("nameIn").value.trim();
   $("realm").textContent=REALMS[S.realm];
   $("qi").textContent=S.realm<TOP?"Tu vi "+Math.floor(S.qi)+" / "+max:"Đã phi thăng";
   $("ring").style.setProperty("--p",S.realm<TOP?Math.min(100,S.qi/max*100):100);
@@ -129,8 +150,14 @@ function render(){
   $("bPlant").disabled=dead;
   $("bAlch").disabled=dead||S.herb<3;
   $("bPill").disabled=dead||S.pill<1||full||S.realm>=TOP;
-  $("inv").textContent="Linh thảo: "+S.herb+", đan dược: "+S.pill+", kinh nghiệm luyện đan: "+S.alch+", thương thế: "+["không","nhẹ","nặng"][S.hurt||0];
-  $("bHealP").disabled=dead||!S.hurt||S.pill<1;
+  $("inv").textContent="Linh thảo: "+S.herb+(S.herb?" ("+QN[Math.round(avgQ())]+")":"")+", Tụ Linh Đan: "+S.pill+", Hồi Thương Đan: "+S.heal+", kinh nghiệm luyện đan: "+S.alch+", thương thế: "+["không","nhẹ","nặng"][S.hurt||0];
+  $("bHealP").disabled=dead||!S.hurt||S.heal<1;
+  $("bAlchH").disabled=dead||S.herb<3;
+  $("bAlch").textContent="Luyện Tụ Linh Đan (3 linh thảo, thành công "+Math.round(alchP("qi")*100)+"%)";
+  $("bAlchH").textContent="Luyện Hồi Thương Đan (3 linh thảo, thành công "+Math.round(alchP("heal")*100)+"%)";
+  $("bPlant").textContent="Thúc linh thảo bằng bình ("+fmtT(plantT())+")";
+  $("bPill").textContent="Uống Tụ Linh Đan, tăng tu vi tức thì (có "+S.pill+")";
+  $("bHealP").textContent="Uống Hồi Thương Đan, chữa khỏi hẳn (có "+S.heal+")";
   $("bHealS").disabled=dead||!S.hurt||S.stone<2;
   
   
@@ -148,12 +175,15 @@ $("bExp").onclick=()=>{explore();render();save()};
 $("bPlant").onclick=()=>{plant();render();save()};
 $("rAuto").onclick=toggleRoll;
 $("rGo").onclick=startLife;
+$("fxok").onclick=fxClose;
+$("nameIn").oninput=render;
 $("bHealP").onclick=()=>{healPill();render();save()};
 $("bHealS").onclick=()=>{healStone();render();save()};
-$("bAlch").onclick=()=>{alchemy();render();save()};
+$("bAlch").onclick=()=>{alchemy("qi");render();save()};
+$("bAlchH").onclick=()=>{alchemy("heal");render();save()};
 $("bPill").onclick=()=>{eatPill();render();save()};
 $("bStone").onclick=()=>{useStone();render();save()};
-$("bBreak").onclick=()=>{if(S.dead)reborn();else{breakthrough();render();save();startAuto()}};
+$("bBreak").onclick=()=>{if(S.dead)reborn();else if(!tribuOn){tribuOn=true;stopAuto();tribulation()}};
 $("bReset").onclick=()=>{if(!resetArm){resetArm=true;$("bReset").textContent="Bấm lần nữa để xác nhận";setTimeout(()=>{resetArm=false;$("bReset").textContent="Chơi lại từ đầu"},3000);return}resetArm=false;$("bReset").textContent="Chơi lại từ đầu";stopAuto();stopRoll();S=newLife(0,1);render();save()};
 S=null;
 if(!S||!S.root||S.rolls===undefined){S=newLife(0,1)}

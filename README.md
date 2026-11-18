@@ -7,6 +7,8 @@ Game mô phỏng tu tiên chạy trên trình duyệt. Bấm đúp `index.html` 
 - `css/style.css`: giao diện
 - `js/character.js`: cảnh giới, thọ nguyên, linh căn, thể chất, thương thế
 - `js/events.js`: sự kiện (chọn lựa, ngẫu nhiên, thám hiểm)
+- `js/alchemy.js`: thúc linh thảo, luyện đan, hiệu ứng và màn hình kết quả
+- `img/`: ảnh linh thảo, đan thành công, đan thất bại
 - `js/game.js`: vòng lặp tu luyện, đột phá, luyện đan, hiển thị
 
 Muốn thêm sự kiện: mở `js/events.js`, đọc phần chú thích ở đầu file rồi thêm một mục vào mảng `EV`.
