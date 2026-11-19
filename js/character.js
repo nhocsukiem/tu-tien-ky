@@ -9,7 +9,7 @@ const CHANCE=[.7,.6,.5,.45,.4,.35,.3,.25,.2];
 const EL=['Kim','Mộc','Thủy','Hỏa','Thổ'];
 const MUT=['Lôi','Băng','Ám','Phong'];
 const BODIES=[['Tam Dương Chi Thể',1.5],['Cửu Linh Kiếm Thể',1.4],['Đoán Kim Chi Thể',1.2],['Thổ Linh Chi Thể',1.2],['Tự Trị Chi Thể',1],['Bất Diệt Chi Thể',1]];
-const NOTE={'Tam Dương Chi Thể':'Tư chất chỉ dưới thiên linh căn.','Cửu Linh Kiếm Thể':'Một trong ba đại kiếm tu linh thể.','Đoán Kim Chi Thể':'Cực hợp công pháp thuộc tính kim.','Thổ Linh Chi Thể':'Giỏi công pháp thổ độn.','Tự Trị Chi Thể':'Thương thế hồi phục nhanh gấp đôi.','Bất Diệt Chi Thể':'Đột phá thất bại không bao giờ bị trọng thương hay hư căn cơ.'};
+const NOTE={'Tam Dương Chi Thể':'Tư chất chỉ dưới thiên linh căn.','Cửu Linh Kiếm Thể':'Một trong ba đại kiếm tu linh thể.','Đoán Kim Chi Thể':'Cực hợp công pháp thuộc tính kim.','Thổ Linh Chi Thể':'Giỏi công pháp thổ độn.','Tự Trị Chi Thể':'Thương thế hồi phục nhanh gấp đôi.','Bất Diệt Chi Thể':'Đột phá thất bại chỉ bị thương nhẹ, không bao giờ bị trọng thương.'};
 function pickEl(n){const a=EL.slice(),r=[];while(r.length<n)r.push(a.splice(rnd(a.length),1)[0]);return r.join(', ')}
 function rollTraits(){
   const x=Math.random();let name,m,tl=false;

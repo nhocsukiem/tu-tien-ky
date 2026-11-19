@@ -1,6 +1,4 @@
 // ===== THÚC LINH THẢO & LUYỆN ĐAN: hiệu ứng, màn hình kết quả, tỉ lệ thành công =====
-// Ảnh nằm ở thư mục img/. Muốn đổi ảnh chỉ cần thay file cùng tên hoặc sửa đường dẫn trong IMG.
-const IMG={herb:'img/linh-thao.jpg',ok:'img/dan-thanh-cong.jpg',fail:'img/dan-that-bai.jpg'};
 const HERBN=['Thanh Nguyên Thảo','Tử Tâm Thảo','Hỏa Linh Chi','Băng Phách Liên','Cửu Diệp Linh Chi','Tinh Hà Thảo','Vạn Niên Chi','Hỗn Nguyên Thảo','Thiên Tâm Bảo Dược'];
 const QN=['Hạ phẩm','Trung phẩm','Thượng phẩm','Cực phẩm','Biến dị'];
 const QC=['154,170,160','90,200,140','90,170,255','255,200,70','230,90,255'];
@@ -30,27 +28,6 @@ function furnaceArt(i){
   const sm=i>=2?[0,1,2].map(k=>`<circle class="pt" style="animation-delay:${k*.3}s" cx="${105+k*15}" cy="120" r="${8+k*3}" fill="rgba(190,170,230,.5)"/>`).join(''):'';
   return `<svg viewBox="0 0 240 240">${lf}<g class="flame" style="transform-origin:120px 150px;transform:scale(${fl})"><path d="M120 150 C90 120 110 100 118 70 C128 100 150 120 120 150Z" fill="#f80"/><path d="M120 150 C105 130 115 118 120 100 C127 118 136 130 120 150Z" fill="#fd5"/></g>${sm}<path d="M62 150 h116 q4 46 -30 58 h-56 q-34-12 -30-58z" fill="#3d5a52" stroke="#c9a24b" stroke-width="3"/><rect x="56" y="144" width="128" height="10" rx="4" fill="#4d7066" stroke="#c9a24b" stroke-width="2"/><path d="M78 208 l-8 20 M162 208 l8 20" stroke="#c9a24b" stroke-width="5" stroke-linecap="round"/></svg>`}
 
-// ---------- khung hiệu ứng + màn hình kết quả (dùng chung) ----------
-let fxBusy=false;
-function fxShow(art,caps,res){
-  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  fxBusy=true;stopAuto();
-  $('fx').hidden=false;$('fx').className='';$('fxres').hidden=true;$('fxcap').hidden=false;
-  $('fxart').innerHTML=art(0);$('fxcap').textContent=caps[0];
-  let i=0;
-  const t=setInterval(()=>{
-    i++;
-    if(i<caps.length){$('fxart').innerHTML=art(i);$('fxcap').textContent=caps[i]}
-    else{clearInterval(t);fxResult(res)}
-  },reduce?250:750);
-}
-function fxResult(r){
-  $('fxcap').hidden=true;$('fxart').innerHTML='';$('fxres').hidden=false;
-  const im=$('fxim');im.src=IMG[r.img];im.style.filter=r.filter||'';im.style.setProperty('--g',r.glow);
-  $('fxt').textContent=r.title;$('fxt').className=r.bad?'bad':'';$('fxl').textContent=r.lines.join('\n');
-  if(r.boom)$('fx').classList.add('shake');
-}
-function fxClose(){$('fx').hidden=true;$('fx').className='';fxBusy=false;render();save();startAuto()}
 
 // ---------- thúc linh thảo bằng bình nhỏ ----------
 function plant(){
@@ -62,7 +39,7 @@ function plant(){
   say('Thu hoạch '+name+' ('+QN[q[0]]+', '+QN[q[1]]+'), '+yrs.toLocaleString('vi-VN')+' năm tuổi, sau '+fmtT(t)+' thúc bằng bình nhỏ.',best>=3?'y':'g');
   advance(t);
   fxShow(plantArt(QC[best]),['Gieo hạt xuống đất...','Dịch trong bình nhỏ thấm xuống, hạt nảy mầm...','Cây vươn lên, linh khí cuồn cuộn quanh bình...','Linh thảo trưởng thành, ánh sáng lan tỏa...','Thu hoạch linh thảo!'],
-    {img:'herb',glow:QC[best],filter:'hue-rotate('+(S.realm*35)+'deg) saturate('+(1+best*.12)+')',title:best===4?'Linh thảo biến dị xuất hiện!':'Thu hoạch thành công!',
+    {img:best>=3?'herb':'ltTruong',card:best<3,glow:QC[best],filter:'hue-rotate('+(S.realm*35)+'deg) saturate('+(1+best*.12)+')',title:best===4?'Linh thảo biến dị xuất hiện!':'Thu hoạch thành công!',
      lines:['Linh thảo: '+name,'Tuổi cây: '+yrs.toLocaleString('vi-VN')+' năm','Phẩm chất: '+QN[q[0]]+' và '+QN[q[1]],'Số lượng nhận được: 2 gốc','Thời gian thúc: '+fmtT(t)].concat(best===4?['Dị biến: linh thảo tỏa ánh bảy sắc, dược lực khác thường.']:[])});
 }
 
@@ -79,13 +56,13 @@ function alchemy(kind){
     const x=Math.random(),tier=x<.02?3:x<.08?2:x<.30?1:0,n=1+[0,0,1,2][tier];
     if(kind==='heal')S.heal+=n;else S.pill+=n;S.alch++;
     say('Luyện thành công '+n+' viên '+D.n+' ('+TQ[tier]+').',tier>=2?'y':'g');
-    res={img:'ok',glow:QC[tier+1],filter:'',title:tier===3?'Dị tượng xuất hiện! Đan thành cực phẩm!':tier===2?'Đan thành cực phẩm!':'Luyện đan thành công!',
+    res={img:tier>=2?'ok':'ldOk',card:tier<2,glow:QC[tier+1],filter:'',title:tier===3?'Dị tượng xuất hiện! Đan thành cực phẩm!':tier===2?'Đan thành cực phẩm!':'Luyện đan thành công!',
       lines:['Đan dược: '+D.n,'Phẩm cấp: '+D.rank,'Phẩm chất: '+TQ[tier],'Số lượng: +'+n+' viên',use,rate,'Kinh nghiệm luyện đan: +1']};
   }else{
     const boom=Math.random()<.25;
     if(boom)hurtUp(1);
     say(boom?'Lò đan nổ tung, mất 3 linh thảo và bị thương nhẹ.':'Lửa tắt, đan không thành, mất 3 linh thảo.','b');
-    res={img:'fail',glow:boom?'255,70,60':'150,110,200',filter:boom?'saturate(1.4) hue-rotate(-15deg)':'',bad:true,boom:boom,title:boom?'Lò đan nổ tung!':'Lửa tắt, đan không thành',
+    res={img:boom?'ldFail':'fail',card:boom,glow:boom?'255,70,60':'150,110,200',filter:boom?'saturate(1.4) hue-rotate(-15deg)':'',bad:true,boom:boom,title:boom?'Lò đan nổ tung!':'Lửa tắt, đan không thành',
       lines:['Đan dược: '+D.n,'Phẩm cấp: '+D.rank,use+' (mất trắng)',rate].concat(boom?['Hậu quả: bị thương nhẹ.']:['Linh thảo đã bị cháy hỏng.'])};
   }
   advance(2);

@@ -1,0 +1,20 @@
+/* ===== HIỆU ỨNG NÚT + ẢNH THẺ KẾT QUẢ ===== */
+button{position:relative;overflow:hidden;transition:transform .08s,box-shadow .2s}
+button:active:not(:disabled){transform:scale(.97)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.4);transform:scale(0);animation:rip .65s ease-out;pointer-events:none}
+@keyframes rip{to{transform:scale(2.6);opacity:0}}
+#bBreak:not(:disabled){animation:charge 1.6s ease-in-out infinite}
+@keyframes charge{0%,100%{box-shadow:0 0 0 rgba(255,200,70,0)}50%{box-shadow:0 0 18px rgba(255,200,70,.85)}}
+#fxim.card{object-fit:contain;max-height:56vh;background:rgba(0,0,0,.35)}
+/* cảnh báo thọ nguyên sắp cạn (còn <= 5 năm) */
+#age.warn{color:var(--seal);animation:blink .7s steps(2,start) infinite}
+#lifebar.warn{animation:blink .7s steps(2,start) infinite}
+@keyframes blink{50%{opacity:.25}}
+/* hộp xác nhận */
+#cf{position:fixed;inset:0;z-index:30;background:rgba(8,14,13,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+#cf[hidden]{display:none}
+#cf .card{width:100%;max-width:380px;background:var(--panel);color:var(--ink);border:2px solid var(--seal);border-radius:10px;padding:18px}
+#cft{font-size:18px;font-weight:700;line-height:1.5;margin-bottom:14px}
+#cf .acts{display:grid;grid-template-columns:1fr;gap:8px}
+@media (prefers-reduced-motion:reduce){.rip,#bBreak:not(:disabled),#age.warn,#lifebar.warn{animation:none}}
+#evim{width:100%;max-height:30vh;object-fit:cover;object-position:top;border-radius:8px;margin-bottom:10px;box-shadow:0 0 18px rgba(120,230,170,.45)}

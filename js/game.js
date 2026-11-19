@@ -10,12 +10,14 @@ function advance(months){
   S.m+=months;if(S.hurt>0){S.hm=(S.hm||0)+months*(S.tname==='Tự Trị Chi Thể'?2:1);if(S.hm>=(S.hurt==2?60:36)){S.hurt--;S.hm=0;say('Thương thế đã thuyên giảm theo thời gian.','g')}}S.evT=(S.evT===undefined?nextEv():S.evT)-months;S.pT=(S.pT===undefined?nextP():S.pT)-months;if(S.pT<=0&&age()<S.life){S.pT=nextP();passive()}if(age()<S.life&&S.ev==null&&S.evT<=0)raiseEvent();
   if(age()>=S.life)die();
 }
-function die(){S.ev=null;
+function die(msg){S.ev=null;
   stopAuto();
   S.dead=true;
   const pts=S.realm*3+1;
-  say("Thọ nguyên cạn kiệt, ngươi tọa hóa ở tuổi "+age()+" với cảnh giới "+REALMS[S.realm]+". Nhận "+pts+" đạo duyên.","b");
+  S.pts=pts;S.dmsg=msg||('Thọ nguyên cạn kiệt, ngươi tọa hóa ở tuổi '+age()+'.');
+  say(S.dmsg+' Cảnh giới: '+REALMS[S.realm]+'. Nhận '+pts+' đạo duyên.','b');
   S.legacy+=pts;
+  setTimeout(()=>deathCard(),0);
 }
 function reborn(){
   const L=S.legacy,G=S.gen+1;
@@ -47,17 +49,21 @@ function breakthrough(){
   const p=(S.tl&&S.realm===1)?1:Math.max(.05,Math.min(.95,CHANCE[S.realm]+.1*S.boost+.01*S.legacy-.15*(S.hurt||0)));
   S.boost=0;
   if(Math.random()<p){
-    S.realm++;S.qi=0;
+    S.realm++;S.qi=0;S.fails=0;
     S.life=Math.max(S.life,LIFE[S.realm]);
     if(S.realm===TOP){
-      const pts=15;S.legacy+=pts;
+      const pts=15;S.legacy+=pts;S.pts=pts;S.dmsg='Ngươi vượt qua thiên kiếp cuối cùng và phi thăng tiên giới!';
       say("Thiên kiếp giáng xuống, ngươi vượt qua tất cả và phi thăng tiên giới! Nhận "+pts+" đạo duyên. Bắt đầu kiếp mới để tiếp tục.","y");
       S.dead=true;stopAuto();
     }else say("Đột phá thành công! Ngươi đã đạt cảnh giới "+REALMS[S.realm]+".","y");
   }else{
-    const x=S.tname==='Bất Diệt Chi Thể'?Math.random()*.5:Math.random();S.m+=24;if(x<.5){S.qi=Math.floor(S.qi*.6);hurtUp(1)}else if(x<.85){S.qi=Math.floor(S.qi*.4);hurtUp(2)}else{S.qi=Math.floor(S.qi*.4);hurtUp(2);S.mult=Math.round(S.mult*90)/100}
-    say("Đột phá thất bại (xác suất "+Math.round(p*100)+"%). "+(x<.5?"Tâm ma xâm nhập, mất 40% tu vi, bị thương nhẹ.":x<.85?"Kinh mạch tổn thương, mất 60% tu vi, bị trọng thương.":"Căn cơ bị hư hỏng, mất 60% tu vi, trọng thương và tốc độ tu luyện vĩnh viễn giảm 10%.")+" Hao tổn 2 năm thọ nguyên.","b");
-    if(age()>=S.life)die();
+    // Thất bại: mất 30% tu vi, tổn hao 5 năm thọ nguyên, đếm thất bại liên tiếp; đủ 3 lần thì tọa hóa.
+    S.fails=(S.fails||0)+1;
+    S.qi=Math.floor(S.qi*.7);S.m+=60;
+    hurtUp(S.tname==='Bất Diệt Chi Thể'?1:2);
+    say('💥 Đột phá thất bại! Lôi kiếp phản phệ, kinh mạch trọng thương, tổn hao 5 năm thọ nguyên! (Thất bại lần '+S.fails+'/3)','b');
+    if(S.fails>=3)die('Lôi kiếp giáng thế, kinh mạch đan điền vỡ vụn, thân vẫn đạo tiêu!');
+    else if(age()>=S.life)die();
   }
 }
 function eatPill(){
@@ -66,41 +72,6 @@ function eatPill(){
   const q=gain()*15;
   S.qi=Math.min(need(),S.qi+q);
   say("Uống Tụ Linh Đan, tu vi tăng "+q+".","g");
-}
-let tribuOn=false;
-function tribulation(){
-  const ov=$('tribu'),cv=$('tcv'),tx=$('ttxt'),g=cv.getContext('2d');
-  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const W=cv.width=innerWidth,H=cv.height=innerHeight;
-  const n=Math.min(10,2+S.realm);
-  let flash=0,i=0,col='150,200,255',run=true;
-  ov.hidden=false;ov.className=reduce?'':'shake';
-  tx.textContent='Mây kiếp tụ lại trên đầu ngươi...';
-  function glow(p,w){g.save();g.lineJoin='round';g.shadowColor='rgb('+col+')';g.shadowBlur=24;g.strokeStyle='#fff';g.lineWidth=w;g.beginPath();g.moveTo(p[0][0],p[0][1]);p.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.stroke();g.restore()}
-  function strike(){
-    const pts=[[W*(.15+Math.random()*.7),0]];let y=0,x=pts[0][0];
-    while(y<H*.9){y+=H*(.04+Math.random()*.06);x+=(Math.random()-.5)*W*.12;pts.push([x,y])}
-    glow(pts,3.5);
-    for(let b=0;b<3;b++){const s=pts[1+rnd(pts.length-2)],br=[s];let bx=s[0],by=s[1];for(let k=0;k<4;k++){bx+=(Math.random()-.5)*W*.14;by+=H*.05;br.push([bx,by])}glow(br,1.6)}
-    flash=reduce?.2:.7;
-  }
-  function frame(){
-    g.fillStyle='rgba(5,8,14,.18)';g.fillRect(0,0,W,H);
-    for(let c=0;c<5;c++){const cx=W*(c/4),r=Math.max(W,H)*.35,gr=g.createRadialGradient(cx,0,0,cx,0,r);gr.addColorStop(0,'rgba(60,70,95,.12)');gr.addColorStop(1,'rgba(60,70,95,0)');g.fillStyle=gr;g.fillRect(0,0,W,H)}
-    if(flash>0){g.fillStyle='rgba('+col+','+flash+')';g.fillRect(0,0,W,H);flash*=.85;if(flash<.02)flash=0}
-    if(run)requestAnimationFrame(frame);
-  }
-  g.fillStyle='#05080e';g.fillRect(0,0,W,H);frame();
-  const t=setInterval(()=>{
-    if(i<n){i++;tx.textContent='Lôi kiếp giáng xuống! Đạo '+i+'/'+n;strike()}
-    else{clearInterval(t);setTimeout(finish,500)}
-  },reduce?450:650);
-  function finish(){
-    const before=S.realm;breakthrough();const ok=S.realm>before;
-    col=ok?'255,215,120':'255,70,60';flash=ok?.9:.8;
-    tx.textContent=ok?'Đột phá thành công: '+REALMS[S.realm]+'!':'Đột phá thất bại...';
-    setTimeout(()=>{run=false;ov.hidden=true;tribuOn=false;render();save();startAuto()},reduce?900:1700);
-  }
 }
 let rt=null,resetArm=false;
 function stopRoll(){if(rt){clearInterval(rt);rt=null}}
@@ -116,7 +87,7 @@ function startLife(){
   render();save();
 }
 function stopAuto(){if(auto){clearInterval(auto);auto=null}}
-function startAuto(){if(auto||S.dead||S.rolling||S.ev!=null)return;if(S.realm<TOP&&S.qi>=need())return;auto=setInterval(()=>{cult(1);render();save()},600);render()}
+function startAuto(){if(auto||S.dead||S.rolling||S.ev!=null||fxBusy)return;if(S.realm<TOP&&S.qi>=need())return;auto=setInterval(()=>{cult(1);render();save()},600);render()}
 function toggleAuto(){
   if(auto){stopAuto()}else startAuto();
   render();
@@ -125,7 +96,8 @@ function render(){
   const dead=S.dead,max=S.realm<TOP?need():1;
   const hasEv=S.ev!=null&&!S.dead;
   $("ev").hidden=!hasEv;
-  if(hasEv){const e=EV[S.ev];$("evT").textContent=e.t;const box=$("evO");box.innerHTML='';e.o.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o.l;b.disabled=!!(o.ok&&!o.ok());b.onclick=()=>pick(i);box.appendChild(b)})}
+  if(hasEv){const e=EV[S.ev];$("evT").textContent=e.t;
+    const im=$("evim");im.hidden=!e.img;if(e.img&&im.dataset.k!==e.img){im.src=IMG[e.img];im.dataset.k=e.img}const box=$("evO");box.innerHTML='';e.o.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o.l;b.disabled=!!(o.ok&&!o.ok());b.onclick=()=>pick(i);box.appendChild(b)})}
   $("roll").hidden=!S.rolling;
   $("rGen").textContent=S.gen;$("rN").textContent=S.rolls;
   $("rRoot").textContent=S.rolled?S.root:"Linh căn chưa xác định";$("rTal").textContent=S.rolled?"Thể chất: "+S.tname:"Thể chất chưa xác định";
@@ -143,6 +115,8 @@ function render(){
   $("legacy").textContent=S.legacy;
   $("gen").textContent=S.gen;
   $("lifebar").style.width=Math.min(100,age()/S.life*100)+"%";
+  const warn=!dead&&S.life<99999&&S.life-age()<=5;
+  $("lifebar").classList.toggle("warn",warn);$("age").classList.toggle("warn",warn);
   const full=S.qi>=max&&S.realm<TOP;
   $("bCult").disabled=dead||full||S.realm>=TOP;
   $("bYear").disabled=dead||full||S.realm>=TOP;
@@ -165,13 +139,17 @@ function render(){
   $("bStone").disabled=dead||S.stone<1||S.boost>=3;
   $("bStone").textContent="Linh thạch hộ pháp ("+S.boost+"/3)";
   const p=S.realm<TOP?(S.tl&&S.realm===1?100:Math.max(5,Math.min(95,Math.round((CHANCE[S.realm]+.1*S.boost+.01*S.legacy-.15*(S.hurt||0))*100)))):0;
-  $("bBreak").textContent=dead?"Chuyển thế luân hồi":"Đột phá"+(S.realm<TOP?" ("+p+"%)":"");
+  $("bBreak").textContent=dead?"Chuyển thế luân hồi":"Đột phá"+(S.realm<TOP?" ("+p+"%)":"")+(S.fails?" - thất bại "+S.fails+"/3"+(S.fails>=2?", nguy hiểm!":""):"");
   $("bBreak").disabled=!dead&&!full;
   $("log").innerHTML=S.log.map(l=>'<p class="'+l.c+'">'+l.t+'</p>').join("");
 }
 $("bCult").onclick=()=>{cult(1);render();save()};
-$("bYear").onclick=()=>{cult(12);render();save()};
-$("bExp").onclick=()=>{explore();render();save()};
+$("bYear").onclick=()=>{
+  const go=()=>bequan();
+  if(S.life<99999&&S.life-age()<=5)askConfirm('Thọ nguyên sắp cạn kiệt, bế quan có nguy cơ tọa hóa! Bạn có chắc chắn muốn bế quan không?',go,'Vẫn bế quan','Hủy');
+  else go();
+};
+$("bExp").onclick=()=>thamhiem();
 $("bPlant").onclick=()=>{plant();render();save()};
 $("rAuto").onclick=toggleRoll;
 $("rGo").onclick=startLife;
