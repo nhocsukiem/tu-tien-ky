@@ -34,9 +34,9 @@ const EV=[
  {t:'Ngươi ghé phường thị, có người rao mua bán đan dược.',o:[
   {l:'Mua 1 Tụ Linh Đan (2 linh thạch)',ok:()=>S.stone>=2,f:()=>{S.stone-=2;S.pill++;say('Ngươi mua được 1 viên Tụ Linh Đan.','g')}},
   {l:'Mua 1 Hồi Thương Đan (2 linh thạch)',ok:()=>S.stone>=2,f:()=>{S.stone-=2;S.heal++;say('Ngươi mua được 1 viên Hồi Thương Đan.','g')}},
-  {l:'Bán 1 Tụ Linh Đan (được 2 linh thạch)',ok:()=>S.pill>=1,f:()=>{S.pill--;S.stone+=2;say('Ngươi bán Tụ Linh Đan, được 2 linh thạch.','g')}},
+  {l:'Bán 1 Tụ Linh Đan (được 2 linh thạch)',nb:1,ok:()=>S.pill>=1,f:()=>{S.pill--;S.stone+=2;say('Ngươi bán Tụ Linh Đan, được 2 linh thạch.','g')}},
   {l:'Chỉ xem rồi đi',f:()=>say('Ngươi dạo một vòng rồi rời phường thị.')}]},
- {t:'Ngươi gặp một lão giả bị thương nặng bên đường, thều thào xin một viên đan chữa thương.',o:[
+ {c:()=>S.heal>=1,t:'Ngươi gặp một lão giả bị thương nặng bên đường, thều thào xin một viên đan chữa thương.',o:[
   {l:'Cho ông ta 1 Hồi Thương Đan',ok:()=>S.heal>=1,f:()=>{S.heal--;if(Math.random()<.5){S.life+=15;say('Lão giả hóa ra là cao nhân ẩn mình, chỉ điểm giúp thọ nguyên của ngươi tăng thêm 15 năm.','y')}else say('Ông ta uống đan rồi lặng lẽ đi mất, ngươi chẳng nhận được gì.')}},
   {l:'Làm ngơ',f:()=>say('Ngươi bước qua, không ngoảnh lại.')}]},
  {t:'Ngươi tình cờ phát hiện một hang động bí ẩn, từ bên trong tỏa ra linh khí nhàn nhạt. Có vào khám phá hay không?',o:[
@@ -54,12 +54,32 @@ const EV=[
   {l:'Bỏ chạy (thoát 60%)',f:()=>{if(Math.random()<.6)say('Ngươi dùng thân pháp thoát được.');else{S.qi=Math.floor(S.qi*.8);hurtUp(1);say('Ngươi bị đuổi kịp, bị thương nhẹ và mất 20% tu vi.','b')}}}]},
  {c:()=>S.realm>=1,t:'Một tông môn nhỏ mời ngươi làm khách khanh, bù lại ngươi phải làm việc cho họ hai năm.',o:[
   {l:'Nhận lời',f:()=>{S.stone+=3;S.m+=24;say('Ngươi làm việc cho tông môn hai năm, nhận 3 linh thạch và 1 viên '+giveDan()+'.','g')}},
-  {l:'Từ chối',f:()=>say('Ngươi khéo léo từ chối, vẫn một mình tu hành.')}]}
+  {l:'Từ chối',f:()=>say('Ngươi khéo léo từ chối, vẫn một mình tu hành.')}]},
+ {c:()=>S.realm>=2,t:'Một tu sĩ cùng cảnh giới mời ngươi luận đạo, hẹn chỉ điểm lẫn nhau.',o:[
+  {l:'Nhận lời luận đạo',f:()=>{if(Math.random()<.6){const q=gain()*10;S.qi=Math.min(need(),S.qi+q);say('Luận đạo ba ngày, ngươi ngộ ra nhiều điều, tu vi tăng '+q+'.','y')}else{S.qi=Math.floor(S.qi*.9);hurtUp(1);say('Đối phương thử sức quá nặng, ngươi bị thương nhẹ và mất 10% tu vi.','b')}}},
+  {l:'Từ chối khéo',f:()=>say('Ngươi viện cớ bế quan, khéo léo từ chối.')}]},
+ {c:()=>S.realm>=3,t:'Ngươi tìm thấy một ngọc giản cổ ghi công pháp thất truyền, nhưng cần ba năm tham ngộ mới hiểu hết.',o:[
+  {l:'Dành ba năm tham ngộ (thành công 70%)',f:()=>{S.m+=36;if(Math.random()<.7){S.mult=Math.round(S.mult*110)/100;say('Tham ngộ thành công, tốc độ tu luyện vĩnh viễn tăng 10% (x'+S.mult+').','y')}else say('Ba năm trôi qua, ngươi chẳng ngộ ra được gì.','b')}},
+  {l:'Cất đi, để dành lúc khác',f:()=>say('Ngươi cất ngọc giản vào túi trữ vật.')}]},
+ {c:()=>S.realm>=5,t:'Thiên địa dị tượng: linh khí trời đất bỗng bạo động, cuồn cuộn đổ về quanh ngươi.',o:[
+  {l:'Nhân cơ hội hấp thụ linh khí',f:()=>{const q=gain()*40;S.qi=Math.min(need(),S.qi+q);if(Math.random()<.25){hurtUp(2);say('Linh khí quá bạo liệt, kinh mạch ngươi tổn thương dù tu vi tăng '+q+'.','b')}else say('Ngươi hấp thụ trọn linh khí, tu vi tăng '+q+'.','y')}},
+  {l:'Tránh xa, chờ yên',f:()=>say('Ngươi lùi ra xa, đợi dị tượng tan đi.')}]},
+ {c:()=>S.realm>=6,t:'Một tu sĩ cường đại phát hiện ngươi mang bảo vật quý và đuổi theo.',o:[
+  {l:'Dốc toàn lực chống trả (thắng 50%)',f:()=>{if(Math.random()<.5){addHerb(3,3);S.stone+=5;say('Ngươi đánh lui kẻ địch, thu được 3 linh thảo thượng phẩm và 5 linh thạch.','y')}else{S.qi=Math.floor(S.qi*.6);hurtUp(2);say('Ngươi bại trận, mất 40% tu vi và bị trọng thương.','b')}}},
+  {l:'Bỏ chạy (thoát 70%)',f:()=>{if(Math.random()<.7)say('Ngươi thi triển độn thuật, thoát khỏi truy sát.');else{S.qi=Math.floor(S.qi*.85);hurtUp(1);say('Bị đuổi kịp, ngươi bị thương nhẹ và mất 15% tu vi.','b')}}}]},
+ {t:'Phường thị mở hội đấu giá, vé vào cửa 3 linh thạch.',o:[
+  {l:'Mua vé vào xem (3 linh thạch)',ok:()=>S.stone>=3,nb:1,f:()=>{S.stone-=3;const x=Math.random();if(x<.5){S.heal++;S.pill++;say('Ngươi đấu giá thành công, mua được 1 Hồi Thương Đan và 1 Tụ Linh Đan giá hời.','g')}else if(x<.8){addHerb(2,2);say('Ngươi mua được 2 linh thảo thượng phẩm.','g')}else say('Món đồ ưng ý bị người khác mua mất, ngươi ra về tay không.')}},
+  {l:'Không đi',f:()=>say('Ngươi tiết kiệm linh thạch, không tham gia.')}]},
+ {c:()=>S.hurt>0,t:'Ngươi nghe đồn gần đây có một dòng suối linh giúp lành thương thế.',o:[
+  {l:'Tìm đến ngâm mình (mất 3 tháng)',f:()=>{S.m+=3;S.hurt--;S.hm=0;say('Ngươi ngâm mình trong suối linh, thương thế giảm một bậc.','g')}},
+  {l:'Mặc kệ, tự dưỡng thương',f:()=>say('Ngươi bỏ qua lời đồn, tự dưỡng thương.')}]}
 ];
 // Phần thưởng đan dược ngẫu nhiên: 50% Tụ Linh Đan (tăng tu vi), 50% Hồi Thương Đan (chữa thương). Trả về tên đan.
 function giveDan(){if(Math.random()<.5){S.heal++;return 'Hồi Thương Đan'}S.pill++;return 'Tụ Linh Đan'}
+// Cảnh giới càng cao, linh thạch kiếm được từ sự kiện càng nhiều: cộng thêm floor(cảnh giới/2) lần số nhận được.
+function stoneBonus(s0){const d=S.stone-s0,k=Math.floor(S.realm/2);if(d>0&&k>0){const x=d*k;S.stone+=x;say('Cơ duyên ở cảnh giới cao dày hơn: nhận thêm '+x+' linh thạch.','y')}}
 function raiseEvent(){const ok=[];EV.forEach((e,i)=>{if(!e.c||e.c())ok.push(i)});S.ev=ok[rnd(ok.length)];S.evT=nextEv();stopAuto()}
-function pick(i){const o=EV[S.ev].o[i];if(o.ok&&!o.ok())return;S.ev=null;o.f();if(!S.dead&&age()>=S.life)die();render();save();startAuto()}
+function pick(i){const o=EV[S.ev].o[i];if(o.ok&&!o.ok())return;S.ev=null;const s0=S.stone;o.f();if(!o.nb)stoneBonus(s0);if(!S.dead&&age()>=S.life)die();render();save();startAuto()}
 const nextEv=()=>Math.max(6,Math.round(-Math.log(1-Math.random())*72));
 const nextP=()=>Math.max(2,Math.round(-Math.log(1-Math.random())*30));
 const PASS=[
@@ -71,4 +91,4 @@ const PASS=[
  ()=>{const q=gain()*2;S.qi=Math.min(need(),S.qi+q);say('Nhìn sao băng vụt qua, tâm cảnh thông suốt, tu vi tăng '+q+'.','g')},
  ()=>say('Một đạo hữu quen biết năm xưa đã qua đời, ngươi lặng người nhìn trời.')
 ];
-function passive(){PASS[rnd(PASS.length)]()}
+function passive(){const s0=S.stone;PASS[rnd(PASS.length)]();stoneBonus(s0)}

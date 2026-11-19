@@ -18,3 +18,4 @@ button:active:not(:disabled){transform:scale(.97)}
 #cf .acts{display:grid;grid-template-columns:1fr;gap:8px}
 @media (prefers-reduced-motion:reduce){.rip,#bBreak:not(:disabled),#age.warn,#lifebar.warn{animation:none}}
 #evim{width:100%;max-height:30vh;object-fit:cover;object-position:top;border-radius:8px;margin-bottom:10px;box-shadow:0 0 18px rgba(120,230,170,.45)}
+#rCont{max-width:420px;width:100%;border-color:var(--gold);margin-bottom:4px}

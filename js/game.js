@@ -36,7 +36,7 @@ function cult(months){
 }
 function explore(){
   if(S.dead)return;
-  if(S.ev==null&&Math.random()<.5)raiseEvent();else EVENTS[rnd(EVENTS.length)]();
+  if(S.ev==null&&Math.random()<.5)raiseEvent();else{const s0=S.stone;EVENTS[rnd(EVENTS.length)]();stoneBonus(s0)}
   advance(3);
 }
 function useStone(){
@@ -52,7 +52,7 @@ function breakthrough(){
     S.realm++;S.qi=0;S.fails=0;
     S.life=Math.max(S.life,LIFE[S.realm]);
     if(S.realm===TOP){
-      const pts=15;S.legacy+=pts;S.pts=pts;S.dmsg='Ngươi vượt qua thiên kiếp cuối cùng và phi thăng tiên giới!';
+      const pts=TOP*3+1+15;S.legacy+=pts;S.pts=pts; // = phần thưởng chết ở cảnh giới cao nhất + 15 thưởng phi thăngS.dmsg='Ngươi vượt qua thiên kiếp cuối cùng và phi thăng tiên giới!';
       say("Thiên kiếp giáng xuống, ngươi vượt qua tất cả và phi thăng tiên giới! Nhận "+pts+" đạo duyên. Bắt đầu kiếp mới để tiếp tục.","y");
       S.dead=true;stopAuto();
     }else say("Đột phá thành công! Ngươi đã đạt cảnh giới "+REALMS[S.realm]+".","y");
@@ -99,6 +99,7 @@ function render(){
   if(hasEv){const e=EV[S.ev];$("evT").textContent=e.t;
     const im=$("evim");im.hidden=!e.img;if(e.img&&im.dataset.k!==e.img){im.src=IMG[e.img];im.dataset.k=e.img}const box=$("evO");box.innerHTML='';e.o.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o.l;b.disabled=!!(o.ok&&!o.ok());b.onclick=()=>pick(i);box.appendChild(b)})}
   $("roll").hidden=!S.rolling;
+  $("rCont").hidden=!(SAVED&&S.rolling&&!S.rolled);
   $("rGen").textContent=S.gen;$("rN").textContent=S.rolls;
   $("rRoot").textContent=S.rolled?S.root:"Linh căn chưa xác định";$("rTal").textContent=S.rolled?"Thể chất: "+S.tname:"Thể chất chưa xác định";
   $("rMult").textContent=S.rolled?"Tốc độ tu luyện x"+S.mult+(NOTE[S.tname]?". "+NOTE[S.tname]:"")+(S.tl?" Kết Đan không có bình cảnh.":""):"Hãy chọn linh căn và thể chất của ngươi.";
@@ -153,6 +154,7 @@ $("bExp").onclick=()=>thamhiem();
 $("bPlant").onclick=()=>{plant();render();save()};
 $("rAuto").onclick=toggleRoll;
 $("rGo").onclick=startLife;
+$("rCont").onclick=()=>{if(!SAVED)return;S=SAVED;SAVED=null;S.rolling=false;S.deathShown=false;stopRoll();fxBusy=false;render();save();startAuto();if(S.dead)deathCard()};
 $("fxok").onclick=fxClose;
 $("nameIn").oninput=render;
 $("bHealP").onclick=()=>{healPill();render();save()};
@@ -165,5 +167,8 @@ $("bBreak").onclick=()=>{if(S.dead)reborn();else if(!tribuOn){tribuOn=true;stopA
 $("bReset").onclick=()=>{if(!resetArm){resetArm=true;$("bReset").textContent="Bấm lần nữa để xác nhận";setTimeout(()=>{resetArm=false;$("bReset").textContent="Chơi lại từ đầu"},3000);return}resetArm=false;$("bReset").textContent="Chơi lại từ đầu";stopAuto();stopRoll();S=newLife(0,1);render();save()};
 S=null;
 if(!S||!S.root||S.rolls===undefined){S=newLife(0,1)}
+// Bản lưu gần nhất (nếu hợp lệ) được đưa ra làm lựa chọn 'Tiếp tục'; mặc định vẫn là bắt đầu đời mới.
+let SAVED=(()=>{try{const v=load();return v&&typeof v.m==='number'&&v.root&&v.name&&v.rolls!==undefined&&v.heal!==undefined&&v.pill!==undefined&&v.herb!==undefined&&typeof v.life==='number'&&v.realm>=0&&v.realm<=TOP&&!v.rolling?v:null}catch(e){return null}})();
+if(SAVED)$("rCont").textContent='Tiếp tục: '+SAVED.name+' ('+REALMS[SAVED.realm]+', '+Math.floor(SAVED.m/12)+' tuổi'+(SAVED.dead?', đã hết kiếp':'')+')';
 setTimeout(startAuto,0);
 render();
