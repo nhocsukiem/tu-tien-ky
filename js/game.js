@@ -71,13 +71,35 @@ function breakthrough(){
       S.dead=true;stopAuto();
     }else say("Đột phá thành công! Ngươi đã đạt cảnh giới "+REALMS[S.realm]+".","y");
   }else{
-    // Thất bại: mất 30% tu vi, tổn hao 5 năm thọ nguyên, đếm thất bại liên tiếp; đủ 3 lần thì tọa hóa.
+    // Thất bại: cảnh giới càng cao, hậu quả càng nặng.
+    // Tổn thọ: 5 + realm*5 năm (Luyện Khí 5, Trúc Cơ 10, Kết Đan 15 ... Độ Kiếp 45).
+    // Từ Hóa Thần (realm>=4) có thể sinh tâm ma → chết ngay.
+    // Từ Đại Thừa (realm>=7) xác suất tử vong do tâm ma rất cao.
     S.fails=(S.fails||0)+1;
-    S.qi=Math.floor(S.qi*.7);S.m+=60;
+    const lostYears=5+S.realm*5;                       // năm thọ nguyên mất
+    const qiLoss=Math.min(.7,.7-.03*S.realm);           // mất 30-57% tu vi
+    S.qi=Math.floor(S.qi*qiLoss);
+    S.m+=lostYears*12;                                  // cộng thẳng vào tuổi
     hurtUp(S.tname==='Bất Diệt Chi Thể'?1:2);
-    say('💥 Đột phá thất bại! Lôi kiếp phản phệ, kinh mạch trọng thương, tổn hao 5 năm thọ nguyên! (Thất bại lần '+S.fails+'/3)','b');
-    if(S.fails>=3)die('Lôi kiếp giáng thế, kinh mạch đan điền vỡ vụn, thân vẫn đạo tiêu!');
-    else if(age()>=S.life)die();
+
+    // Tâm ma: cảnh giới càng cao, nguy hiểm càng lớn.
+    // realm 0-3: không có tâm ma đột tử, chỉ tích lũy fails.
+    // realm 4-5 (Hóa Thần, Luyện Hư): 10-15% tâm ma nhập thể → chết ngay.
+    // realm 6 (Hợp Thể): 20% tâm ma.
+    // realm 7-8 (Đại Thừa, Độ Kiếp): 25-35% tâm ma → chết ngay.
+    const tmChance=S.realm<=3?0:S.realm<=5?(.05+S.realm*.025):S.realm===6?.20:(.15+S.realm*.025);
+    const tmDeath=tmChance>0&&Math.random()<tmChance;
+
+    if(tmDeath){
+      die('💀 Đột phá thất bại! Lôi kiếp phản phệ, tâm ma nhập thể, thần hồn câu diệt! Ngươi tọa hóa tại cảnh giới '+REALMS[S.realm]+'.');
+    }else{
+      let msg='💥 Đột phá thất bại! Lôi kiếp phản phệ, kinh mạch trọng thương, tổn hao '+lostYears+' năm thọ nguyên!';
+      if(S.realm>=4)msg+=' Tâm ma rung động, đạo tâm bất ổn!';
+      msg+=' (Thất bại lần '+S.fails+'/3)';
+      say(msg,'b');
+      if(S.fails>=3)die('Lôi kiếp giáng thế, kinh mạch đan điền vỡ vụn, tâm ma thôn phệ, thân vẫn đạo tiêu!');
+      else if(age()>=S.life)die();
+    }
   }
 }
 function eatPill(){
@@ -142,9 +164,7 @@ function render(){
   $("bExp").disabled=dead;
   $("bPlant").disabled=dead;
   $("bAlch").disabled=dead||S.herb<3;
-  $("bPill").disabled=dead||S.pill<1||full||S.realm>=TOP;
   $("inv").textContent="Linh thảo: "+S.herb+(S.herb?" ("+QN[Math.round(avgQ())]+")":"")+", Tụ Linh Đan: "+S.pill+", Hồi Thương Đan: "+S.heal+", kinh nghiệm luyện đan: "+S.alch+", thương thế: "+["không","nhẹ","nặng"][S.hurt||0];
-  $("bHealP").disabled=dead||S.heal<1||(!S.hurt&&!(S.fails>0));
   $("bAlchH").disabled=dead||S.herb<3;
   $("bAlchB").hidden=S.realm>=TOP;
   $("bAlchB").disabled=dead||S.realm>=TOP||S.herb<bdHerbs();
@@ -152,9 +172,8 @@ function render(){
   $("bAlch").textContent="Luyện Tụ Linh Đan (3 linh thảo, thành công "+Math.round(alchP("qi")*100)+"%)";
   $("bAlchH").textContent="Luyện Hồi Thương Đan (3 linh thảo, thành công "+Math.round(alchP("heal")*100)+"%)";
   $("bPlant").textContent="Thúc linh thảo bằng bình ("+fmtT(plantT())+")";
-  $("bPill").textContent="Uống Tụ Linh Đan, +15% thanh tu vi (có "+S.pill+")";
-  $("bHealP").textContent="Uống Hồi Thương Đan, "+(S.hurt?"chữa khỏi hẳn":"xua tan tâm ma")+" (có "+S.heal+")";
   $("bHealS").disabled=dead||!S.hurt||S.stone<2;
+  $("bBag").disabled=S.rolling;
   
   
   
@@ -188,12 +207,10 @@ $("rGo").onclick=startLife;
 $("rCont").onclick=()=>{if(!SAVED)return;S=SAVED;SAVED=null;S.rolling=false;S.deathShown=false;stopRoll();fxBusy=false;render();save();startAuto();if(S.dead)deathCard()};
 $("fxok").onclick=fxClose;
 $("nameIn").oninput=render;
-$("bHealP").onclick=()=>{healPill();render();save()};
 $("bHealS").onclick=()=>{healStone();render();save()};
 $("bAlch").onclick=()=>{alchemy("qi");render();save()};
 $("bAlchH").onclick=()=>{alchemy("heal");render();save()};
 $("bAlchB").onclick=()=>{alchemy("bd");render();save()};
-$("bPill").onclick=()=>{eatPill();render();save()};
 $("bStone").onclick=()=>{useStone();render();save()};
 $("bBreak").onclick=()=>{if(S.dead)reborn();else if(!tribuOn&&canBreak()){tribuOn=true;stopAuto();tribulation()}};
 $("bReset").onclick=()=>{if(!resetArm){resetArm=true;$("bReset").textContent="Bấm lần nữa để xác nhận";setTimeout(()=>{resetArm=false;$("bReset").textContent="Chơi lại từ đầu"},3000);return}resetArm=false;$("bReset").textContent="Chơi lại từ đầu";stopAuto();stopRoll();S=newLife(0,1);render();save()};

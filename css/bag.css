@@ -1,0 +1,16 @@
+/* ===== TÚI ĐỒ ===== */
+#bag{position:fixed;inset:0;z-index:28;background:rgba(8,14,13,.78);display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px))}
+#bag[hidden]{display:none}
+#bag .card{width:100%;max-width:440px;max-height:92vh;overflow-y:auto;background:var(--panel);color:var(--ink);border:2px solid var(--gold);border-radius:12px;padding:16px}
+.bagh{font-size:20px;font-weight:700;color:var(--gold);margin-bottom:6px}
+.bags{font-size:13px;color:var(--mute);margin-bottom:8px}
+.bagr{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.bagr b{font-size:16px}
+.bagr .c{font-size:18px;font-weight:700;color:var(--gold);text-align:right}
+.bagr .d{font-size:13px;color:var(--mute)}
+.bagr button{width:auto;padding:8px 18px;grid-column:2;grid-row:2}
+#bag .close{margin-top:12px}
+#brkHint{white-space:pre-line}
+.bag-btn{font:inherit;font-size:14px;padding:8px 16px;width:100%;margin-bottom:12px;border-radius:6px;border:1px solid var(--gold);background:var(--panel);color:var(--gold);cursor:pointer;font-weight:700;text-align:center}
+.bag-btn:hover:not(:disabled){border-color:var(--jade);color:var(--jade)}
+.bag-btn:disabled{opacity:.45;cursor:default}

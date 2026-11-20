@@ -7,8 +7,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/effects.css">
+<link rel="stylesheet" href="css/bag.css">
 </head>
 <body>
+<div id="bag" hidden><div class="card"><div class="bagh">🎒 Túi Trữ Vật</div><div id="bagl"></div><button class="close main" onclick="closeBag()">Đóng túi</button></div></div>
 <div id="cf" hidden><div class="card"><div id="cft"></div><div class="acts"><button class="seal" id="cfy">Đồng ý</button><button id="cfn">Hủy</button></div></div></div>
 <div id="fx" hidden><div class="fxbox"><div id="fxart"></div><div id="fxcap"></div><div id="fxres" hidden><img id="fxim" alt="Kết quả"><div id="fxt"></div><div id="fxl"></div><button class="main" id="fxok">Thu nhận</button></div></div></div>
 <div id="tribu" hidden><canvas id="tcv"></canvas><div id="ttxt"></div></div>
@@ -46,6 +48,7 @@
 </div>
 <div class="life" title="Thọ nguyên"><i id="lifebar"></i></div>
 <div class="sub" id="inv" style="margin:-6px 0 12px"></div>
+<button id="bBag" class="bag-btn" onclick="openBag()">🎒 Túi trữ vật</button>
 <div id="log"></div>
 <div class="acts">
 <button class="main" id="bCult">Tu luyện (1 tháng)</button>
@@ -58,8 +61,6 @@
 <button id="bAlch">Luyện Tụ Linh Đan (3 linh thảo, tăng tu vi)</button>
 <button id="bAlchH">Luyện Hồi Thương Đan (3 linh thảo, chữa thương)</button>
 <button id="bAlchB">Luyện đan đột phá</button>
-<button id="bPill" style="grid-column:1/-1">Uống Tụ Linh Đan, tăng tu vi</button>
-<button id="bHealP">Uống Hồi Thương Đan, chữa khỏi hẳn</button>
 <button id="bHealS">Chữa thương bằng 2 linh thạch (giảm một bậc)</button>
 <button class="seal" id="bBreak" style="grid-column:1/-1">Đột phá</button>
 <div class="sub" id="brkHint" style="grid-column:1/-1;margin:-2px 0 4px"></div>
@@ -74,6 +75,7 @@
 <script src="js/fx.js"></script>
 <script src="js/alchemy.js"></script>
 <script src="js/tribulation.js"></script>
+<script src="js/bag.js"></script>
 <script src="js/ui-effects.js"></script>
 <script src="js/confirm.js"></script>
 <script src="js/activity-cards.js"></script>
