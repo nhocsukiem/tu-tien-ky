@@ -1,4 +1,4 @@
-// ===== KHUNG HIỆU ỨNG + MÀN HÌNH KẾT QUẢ DÙNG CHUNG =====
+﻿// ===== KHUNG HIỆU ỨNG + MÀN HÌNH KẾT QUẢ DÙNG CHUNG =====
 // fxShow(art,caps,res): chạy hiệu ứng nhiều giai đoạn rồi hiện kết quả (thúc linh thảo, luyện đan).
 // fxCard(res): hiện thẳng một thẻ kết quả (đột phá, bí cảnh...).
 // res = {img:'khóa trong IMG', card:true nếu ảnh đã có chữ, glow:'r,g,b', filter, title, lines:[...], bad, boom}
@@ -40,6 +40,6 @@ function deathCard(){
   if(!S.dead||S.deathShown||fxBusy||(typeof tribuOn!=='undefined'&&tribuOn))return;
   S.deathShown=true;
   const asc=S.realm>=TOP;
-  fxCard({img:asc?'dpOk':'dpFail',card:true,bad:!asc,glow:asc?'255,215,120':'255,70,60',okText:'Chuyển thế luân hồi',onClose:reborn,
+  fxCard({img:asc?'dpOk':(S.dmsg&&S.dmsg.indexOf('tâm ma')>=0?'dpFail':'dpOk'),card:true,bad:!asc,glow:asc?'255,215,120':'255,70,60',okText:'Chuyển thế luân hồi',onClose:reborn,
     lines:[S.dmsg||'',asc?'':'Cảnh giới đạt được: '+REALMS[S.realm],'Tuổi: '+age(),'Đạo Duyên nhận được: +'+(S.pts||0)+' (tổng: '+S.legacy+')','Mỗi điểm Đạo Duyên tăng 5% tốc độ tu luyện ở kiếp sau.'].filter(Boolean)});
 }

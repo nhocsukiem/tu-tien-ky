@@ -1,4 +1,4 @@
-// ===== VÒNG LẶP GAME: tu luyện, đột phá, luyện đan, lưu, hiển thị, nút bấm =====
+﻿// ===== VÒNG LẶP GAME: tu luyện, đột phá, luyện đan, lưu, hiển thị, nút bấm =====
 const KEY="tutien_save_v2";
 let S,auto=null;
 const $=id=>document.getElementById(id);
@@ -60,7 +60,7 @@ function useStone(){
 function breakthrough(){
   if(S.dead||!canBreak())return;
   S.bdp[S.realm]--;
-  const p=(S.tl&&S.realm===1)?1:Math.max(.05,Math.min(.95,CHANCE[S.realm]+.1*S.boost+.01*S.legacy-.15*(S.hurt||0)));
+  const p=(S.tl&&S.realm===1)?1:Math.max(.05,Math.min(.95,CHANCE[S.realm]+.1*S.boost+Math.min(.01*S.legacy,.3)-.15*(S.hurt||0)));
   S.boost=0;
   if(Math.random()<p){
     S.realm++;S.qi=0;S.fails=0;
@@ -135,7 +135,7 @@ function render(){
   if(hasEv){const e=EV[S.ev];$("evT").textContent=e.t;
     const im=$("evim");im.hidden=!e.img;if(e.img&&im.dataset.k!==e.img){im.src=IMG[e.img];im.dataset.k=e.img}const box=$("evO");box.innerHTML='';e.o.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o.l;b.disabled=!!(o.ok&&!o.ok());b.onclick=()=>pick(i);box.appendChild(b)})}
   $("roll").hidden=!S.rolling;
-  $("rCont").hidden=!(SAVED&&S.rolling&&!S.rolled);
+  $("rCont").hidden=!(SAVED&&!SAVED.dead&&S.rolling&&!S.rolled);
   $("rGen").textContent=S.gen;$("rN").textContent=S.rolls;
   $("rRoot").textContent=S.rolled?S.root:"Linh căn chưa xác định";$("rTal").textContent=S.rolled?"Thể chất: "+S.tname:"Thể chất chưa xác định";
   $("rMult").textContent=S.rolled?"Tốc độ tu luyện x"+S.mult+(NOTE[S.tname]?". "+NOTE[S.tname]:"")+(S.tl?" Kết Đan không có bình cảnh.":""):"Hãy chọn linh căn và thể chất của ngươi.";
@@ -173,21 +173,21 @@ function render(){
   $("bAlchH").textContent="Luyện Hồi Thương Đan (3 linh thảo, thành công "+Math.round(alchP("heal")*100)+"%)";
   $("bPlant").textContent="Thúc linh thảo bằng bình ("+fmtT(plantT())+")";
   $("bHealS").disabled=dead||!S.hurt||S.stone<2;
-  $("bBag").disabled=S.rolling;
+  $("bBag").disabled=S.rolling||S.dead;
   
   
   
   $("bStone").disabled=dead||S.realm>=TOP||S.stone<ptCost()||S.boost>=3;
   $("bStone").textContent=S.realm>=TOP?"Pháp trận":"Bày "+PT[Math.min(S.realm,8)]+" ("+ptCost()+" linh thạch, tầng "+S.boost+"/3"+(needPT()?", bắt buộc":"")+")";
-  const p=S.realm<TOP?(S.tl&&S.realm===1?100:Math.max(5,Math.min(95,Math.round((CHANCE[S.realm]+.1*S.boost+.01*S.legacy-.15*(S.hurt||0))*100)))):0;
+  const p=S.realm<TOP?(S.tl&&S.realm===1?100:Math.max(5,Math.min(95,Math.round((CHANCE[S.realm]+.1*S.boost+Math.min(.01*S.legacy,.3)-.15*(S.hurt||0))*100)))):0;
   $("bBreak").textContent=dead?"Chuyển thế luân hồi":"Đột phá"+(S.realm<TOP?" ("+p+"%)":"")+(S.fails?" - thất bại "+S.fails+"/3"+(S.fails>=2?", nguy hiểm!":""):"");
   $("bBreak").disabled=!dead&&!canBreak();
   const hint=$("brkHint");
   if(dead||S.realm>=TOP)hint.textContent="";
   else{const okp=bdHave()>=1,okt=!needPT()||S.boost>=1;
-    hint.textContent="Điều kiện đột phá: tu vi "+(full?"đủ":"chưa đủ")+"; "+BDAN[S.realm]+" "+bdHave()+"/1"+(needPT()?"; "+PT[S.realm]+" tầng "+S.boost+"/1":"");
+    hint.textContent="Điều kiện đột phá: tu vi "+(full?"đủ":"chưa đủ")+"; "+BDAN[S.realm]+" "+bdHave()+"/1"+(needPT()?"; "+PT[S.realm]+(S.boost>=1?" đã đủ":" tầng "+S.boost+"/1"):"");
     hint.style.color=(full&&okp&&okt)?"var(--jade)":"var(--seal)"}
-  $("log").innerHTML=S.log.map(l=>'<p class="'+l.c+'">'+l.t+'</p>').join("");
+  $("log").innerHTML=S.log.map(l=>'<p class="'+l.c+'">'+l.t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>').join("");
 }
 $("bCult").onclick=()=>{cult(STEP());render();save()};
 $("bYear").onclick=()=>{

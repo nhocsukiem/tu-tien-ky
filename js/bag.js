@@ -1,4 +1,4 @@
-// ===== TÚI ĐỒ =====
+﻿// ===== TÚI ĐỒ =====
 // Mở túi để xem linh thảo, linh thạch, đan dược và dùng đan từ đây. Trong lúc mở túi game tạm dừng tự chạy.
 // Thêm vật phẩm mới: thêm một mục vào mảng rows trong bagRows() (n tên, c số lượng, d mô tả, use nếu có nút Dùng).
 let bagOpen=false;
@@ -10,7 +10,7 @@ function bagRows(){
     {n:'Tụ Linh Đan',c:S.pill,d:'Tăng 15% thanh tu vi'+(gain15?' (+'+gain15.toLocaleString('vi-VN')+' tu vi)':'')+(full?'. Tu vi đã đầy.':'.'),use:{ok:S.pill>0&&!full,f:eatPill}},
     {n:'Hồi Thương Đan',c:S.heal,d:heal,use:{ok:S.heal>0&&(S.hurt||S.fails>0),f:healPill}},
     {n:'Linh thảo',c:S.herb,d:S.herb?'Phẩm chất trung bình: '+QN[Math.round(avgQ())]+'.':'Thúc bằng bình nhỏ để có thêm.'},
-    {n:'Linh thạch',c:S.stone,d:'Bày pháp trận ('+ptCost()+' mỗi tầng), chữa thương, mua bán.'}
+    {n:'Linh thạch',c:S.stone,d:'Bày pháp trận ('+ptCost()+' mỗi tầng) và chữa thương.'}
   ];
   if(S.realm<TOP)rows.splice(2,0,{n:BDAN[S.realm],c:bdHave(),d:'Đan đột phá, tự dùng khi bấm Đột phá lên '+REALMS[S.realm+1]+'.'});
   return rows;

@@ -28,7 +28,7 @@ function newLife(legacy,gen){
 // Linh căn/thể chất tốt (hệ số > 1) rút ngắn thời gian này; càng lên cao thiên phú càng quyết định (số mũ tăng theo cảnh giới).
 const NEEDT=[50,120,250,500,1000,2000,4000,8000,14000,1];
 const need=()=>24*Math.pow(3,S.realm)*NEEDT[Math.min(S.realm,9)];
-const gain=()=>Math.max(.5,2*Math.pow(3,S.realm)*Math.pow(S.mult,1+.12*S.realm)*(1+.05*S.legacy)*[1,.6,.3][S.hurt||0]);
+const gain=()=>Math.max(.5,2*Math.pow(3,S.realm)*Math.pow(S.mult,1+.12*S.realm)*Math.min(1+.05*S.legacy,10)*[1,.6,.3][S.hurt||0]);
 // Mỗi lần tu luyện (nút và tự chạy) trôi bao nhiêu tháng: Luyện Khí 1 tháng, Trúc Cơ 1 năm, Hóa Thần 5 năm, Luyện Hư trở lên 10 năm.
 const STEP=()=>S.realm<1?1:S.realm<4?12:S.realm<6?60:120;
 const AUTOMS=()=>S.realm<1?300:450;

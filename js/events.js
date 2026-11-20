@@ -1,4 +1,4 @@
-// ===== SỰ KIỆN =====
+﻿// ===== SỰ KIỆN =====
 // EVENTS: sự kiện đơn giản khi bấm Thám hiểm (chỉ ra kết quả, không cho chọn).
 // EV: sự kiện cho người chơi chọn. Mỗi sự kiện có dạng:
 //   {c:()=>điều kiện (không bắt buộc), t:'nội dung', o:[ {l:'tên nút', ok:()=>điều kiện được bấm (không bắt buộc), f:()=>{kết quả}} ]}
@@ -46,7 +46,7 @@ const EV=[
   {l:'Vào bái lạy',f:()=>{const x=Math.random();if(x<.5){S.life+=8;say('Tuợng đá phát sáng, ban cho ngươi thọ nguyên tăng thêm 8 năm.','y')}else if(x<.8){S.stone+=1;say('Ngươi nhặt được 1 linh thạch dưới chân tượng.','g')}else{S.qi=Math.floor(S.qi*.85);S.m+=12;say('Miếu có tà khí, ngươi bị ám và phải dưỡng thương một năm, mất 15% tu vi.','b')}}},
   {l:'Không vào',f:()=>say('Ngươi chắp tay vái một cái rồi đi tiếp.')}]},
  {t:'Một đoàn thương nhân mời ngươi đi cùng một chuyến buôn đường xa, hứa chia lợi. Có tham gia không?',o:[
-  {l:'Tham gia',f:()=>{if(Math.random()<.6){S.stone+=4;say('Chuyến đi suôn sẻ, ngươi chia được 4 linh thạch.','g')}else{S.stone=Math.max(0,S.stone-1);S.m+=12;say('Đoàn bị cướp giữa đường, ngươi mất 1 linh thạch và mất một năm.','b')}}},
+  {l:'Tham gia',f:()=>{if(Math.random()<.6){S.stone+=4;say('Chuyến đi suôn sẻ, ngươi chia được 4 linh thạch.','g')}else{const lostS=S.stone>0;if(lostS){S.stone--;}S.m+=12;say(lostS?'Đoàn bị cướp giữa đường, ngươi mất 1 linh thạch và mất một năm.':'Đoàn bị cướp giữa đường, ngươi trốn chạy mất một năm.','b')}}},
   {l:'Không tham gia',f:()=>say('Ngươi từ chối, ở lại tu luyện.')}]},
  {c:()=>S.realm>=1,t:'Một tu sĩ có cảnh giới cao hơn chặn đường, đòi ngươi nộp linh thạch mua mạng.',o:[
   {l:'Nộp 2 linh thạch',ok:()=>S.stone>=2,f:()=>{S.stone-=2;say('Ngươi nuốt giận nộp 2 linh thạch, hắn bỏ đi.','b')}},
@@ -71,7 +71,7 @@ const EV=[
   {l:'Mua vé vào xem (3 linh thạch)',ok:()=>S.stone>=3,nb:1,f:()=>{S.stone-=3;const x=Math.random();if(x<.5){S.heal++;S.pill++;say('Ngươi đấu giá thành công, mua được 1 Hồi Thương Đan và 1 Tụ Linh Đan giá hời.','g')}else if(x<.8){addHerb(2,2);say('Ngươi mua được 2 linh thảo thượng phẩm.','g')}else say('Món đồ ưng ý bị người khác mua mất, ngươi ra về tay không.')}},
   {l:'Không đi',f:()=>say('Ngươi tiết kiệm linh thạch, không tham gia.')}]},
  {c:()=>S.hurt>0,t:'Ngươi nghe đồn gần đây có một dòng suối linh giúp lành thương thế.',o:[
-  {l:'Tìm đến ngâm mình (mất 3 tháng)',f:()=>{S.m+=3;S.hurt--;S.hm=0;say('Ngươi ngâm mình trong suối linh, thương thế giảm một bậc.','g')}},
+  {l:'Tìm đến ngâm mình (mất 3 tháng)',f:()=>{S.m+=3;if(S.hurt>0){S.hurt--;S.hm=0;}say('Ngươi ngâm mình trong suối linh, thương thế giảm một bậc.','g')}},
   {l:'Mặc kệ, tự dưỡng thương',f:()=>say('Ngươi bỏ qua lời đồn, tự dưỡng thương.')}]}
 ];
 // Phần thưởng đan dược ngẫu nhiên: 50% Tụ Linh Đan (tăng tu vi), 50% Hồi Thương Đan (chữa thương). Trả về tên đan.
