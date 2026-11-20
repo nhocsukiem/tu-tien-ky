@@ -1,9 +1,21 @@
 // ===== VÒNG LẶP GAME: tu luyện, đột phá, luyện đan, lưu, hiển thị, nút bấm =====
-const KEY="tutien_save_v1";
+const KEY="tutien_save_v2";
 let S,auto=null;
 const $=id=>document.getElementById(id);
 const rnd=n=>Math.floor(Math.random()*n);
-function load(){try{const v=localStorage.getItem(KEY);if(v)return JSON.parse(v)}catch(e){}return null}
+// Nạp tiến trình đã lưu: kiểm tra dữ liệu hợp lệ rồi trộn vào nhân vật mới để thiếu trường nào cũng tự có giá trị mặc định.
+function sane(o){return o&&typeof o==='object'&&typeof o.root==='string'&&Number.isFinite(o.m)&&Number.isFinite(o.qi)&&Number.isFinite(o.life)&&Number.isInteger(o.realm)&&o.realm>=0&&o.realm<=TOP&&Array.isArray(o.log)}
+function load(){
+  try{
+    const v=localStorage.getItem(KEY);if(!v)return null;
+    const o=JSON.parse(v);if(!sane(o))return null;
+    const s=Object.assign(newLife(o.legacy||0,o.gen||1),o);
+    if(!s.bdp||typeof s.bdp!=='object')s.bdp={};
+    if(s.realm<TOP)s.qi=Math.min(s.qi,24*Math.pow(3,s.realm)*NEEDT[s.realm]);
+    if(s.ev!=null&&!(s.ev>=0&&s.ev<EV.length))s.ev=null;
+    return s;
+  }catch(e){return null}
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function say(t,c){S.log.unshift({t:t,c:c||""});S.log=S.log.slice(0,40)}
 function advance(months){
@@ -40,19 +52,21 @@ function explore(){
   advance(3);
 }
 function useStone(){
-  if(S.dead||S.stone<1||S.boost>=3)return;
-  S.stone--;S.boost++;
-  say("Bày linh thạch hộ pháp, xác suất đột phá +10%.","g");
+  const c=ptCost();
+  if(S.dead||S.realm>=TOP||S.stone<c||S.boost>=3)return;
+  S.stone-=c;S.boost++;
+  say("Bày "+PT[Math.min(S.realm,8)]+" (tầng "+S.boost+"/3), tốn "+c+" linh thạch, xác suất đột phá +10%.","g");
 }
 function breakthrough(){
-  if(S.dead||S.qi<need())return;
+  if(S.dead||!canBreak())return;
+  S.bdp[S.realm]--;
   const p=(S.tl&&S.realm===1)?1:Math.max(.05,Math.min(.95,CHANCE[S.realm]+.1*S.boost+.01*S.legacy-.15*(S.hurt||0)));
   S.boost=0;
   if(Math.random()<p){
     S.realm++;S.qi=0;S.fails=0;
     S.life=Math.max(S.life,LIFE[S.realm]);
     if(S.realm===TOP){
-      const pts=TOP*3+1+15;S.legacy+=pts;S.pts=pts; // = phần thưởng chết ở cảnh giới cao nhất + 15 thưởng phi thăngS.dmsg='Ngươi vượt qua thiên kiếp cuối cùng và phi thăng tiên giới!';
+      const pts=TOP*3+1+15;S.legacy+=pts;S.pts=pts;S.dmsg='Ngươi vượt qua thiên kiếp cuối cùng và phi thăng tiên giới!'; // = phần thưởng chết ở cảnh giới cao nhất + 15 thưởng phi thăng
       say("Thiên kiếp giáng xuống, ngươi vượt qua tất cả và phi thăng tiên giới! Nhận "+pts+" đạo duyên. Bắt đầu kiếp mới để tiếp tục.","y");
       S.dead=true;stopAuto();
     }else say("Đột phá thành công! Ngươi đã đạt cảnh giới "+REALMS[S.realm]+".","y");
@@ -69,9 +83,9 @@ function breakthrough(){
 function eatPill(){
   if(S.dead||S.pill<1||S.realm>=TOP||S.qi>=need())return;
   S.pill--;
-  const q=gain()*15;
-  S.qi=Math.min(need(),S.qi+q);
-  say("Uống Tụ Linh Đan, tu vi tăng "+q+".","g");
+  const q=Math.min(Math.floor(need()*0.15),need()-S.qi); // 15% lượng tu vi tối đa của cảnh giới hiện tại
+  S.qi+=q;
+  say("Uống Tụ Linh Đan, tu vi tăng "+q.toLocaleString('vi-VN')+".","g");
 }
 let rt=null,resetArm=false;
 function stopRoll(){if(rt){clearInterval(rt);rt=null}}
@@ -79,7 +93,7 @@ function toggleRoll(){
   if(rt){stopRoll();render();return}if(S.rolled)return;
   S.rolled=true;
   reroll();
-  render();
+  render();save();   // lưu ngay: F5 không thể chọn lại linh căn
 }
 function startLife(){
   S.name=$("nameIn").value.trim().slice(0,20);if(!S.name)return;stopRoll();S.rolling=false;setTimeout(startAuto,0);
@@ -87,7 +101,7 @@ function startLife(){
   render();save();
 }
 function stopAuto(){if(auto){clearInterval(auto);auto=null}}
-function startAuto(){if(auto||S.dead||S.rolling||S.ev!=null||fxBusy)return;if(S.realm<TOP&&S.qi>=need())return;auto=setInterval(()=>{cult(1);render();save()},600);render()}
+function startAuto(){if(auto||S.dead||S.rolling||S.ev!=null||fxBusy)return;if(S.realm<TOP&&S.qi>=need())return;auto=setInterval(()=>{cult(STEP());render();save()},AUTOMS());render()}
 function toggleAuto(){
   if(auto){stopAuto()}else startAuto();
   render();
@@ -107,7 +121,7 @@ function render(){
   $("rAuto").disabled=S.rolled;
   $("rGo").disabled=!S.rolled||!$("nameIn").value.trim();
   $("realm").textContent=REALMS[S.realm];
-  $("qi").textContent=S.realm<TOP?"Tu vi "+Math.floor(S.qi)+" / "+max:"Đã phi thăng";
+  $("qi").textContent=S.realm<TOP?"Tu vi "+Math.floor(S.qi).toLocaleString("vi-VN")+" / "+max.toLocaleString("vi-VN"):"Đã phi thăng";
   $("ring").style.setProperty("--p",S.realm<TOP?Math.min(100,S.qi/max*100):100);
   $("pname").textContent=S.name||"";
   $("root").textContent=S.root+", thể chất "+S.tname+" (x"+S.mult+")";
@@ -121,33 +135,50 @@ function render(){
   const full=S.qi>=max&&S.realm<TOP;
   $("bCult").disabled=dead||full||S.realm>=TOP;
   $("bYear").disabled=dead||full||S.realm>=TOP;
+  $("bCult").textContent="Tu luyện ("+fmtT(STEP())+")";
+  $("bYear").textContent="Bế quan ("+(S.realm>=1?"5":"1")+" năm)";
+  $("bYear10").hidden=S.realm<1;
+  $("bYear10").disabled=dead||full||S.realm>=TOP;
   $("bExp").disabled=dead;
   $("bPlant").disabled=dead;
   $("bAlch").disabled=dead||S.herb<3;
   $("bPill").disabled=dead||S.pill<1||full||S.realm>=TOP;
   $("inv").textContent="Linh thảo: "+S.herb+(S.herb?" ("+QN[Math.round(avgQ())]+")":"")+", Tụ Linh Đan: "+S.pill+", Hồi Thương Đan: "+S.heal+", kinh nghiệm luyện đan: "+S.alch+", thương thế: "+["không","nhẹ","nặng"][S.hurt||0];
-  $("bHealP").disabled=dead||!S.hurt||S.heal<1;
+  $("bHealP").disabled=dead||S.heal<1||(!S.hurt&&!(S.fails>0));
   $("bAlchH").disabled=dead||S.herb<3;
+  $("bAlchB").hidden=S.realm>=TOP;
+  $("bAlchB").disabled=dead||S.realm>=TOP||S.herb<bdHerbs();
+  if(S.realm<TOP)$("bAlchB").textContent="Luyện "+BDAN[S.realm]+" ("+bdHerbs()+" linh thảo, thành công "+Math.round(alchP("bd")*100)+"%, để đột phá)";
   $("bAlch").textContent="Luyện Tụ Linh Đan (3 linh thảo, thành công "+Math.round(alchP("qi")*100)+"%)";
   $("bAlchH").textContent="Luyện Hồi Thương Đan (3 linh thảo, thành công "+Math.round(alchP("heal")*100)+"%)";
   $("bPlant").textContent="Thúc linh thảo bằng bình ("+fmtT(plantT())+")";
-  $("bPill").textContent="Uống Tụ Linh Đan, tăng tu vi tức thì (có "+S.pill+")";
-  $("bHealP").textContent="Uống Hồi Thương Đan, chữa khỏi hẳn (có "+S.heal+")";
+  $("bPill").textContent="Uống Tụ Linh Đan, +15% thanh tu vi (có "+S.pill+")";
+  $("bHealP").textContent="Uống Hồi Thương Đan, "+(S.hurt?"chữa khỏi hẳn":"xua tan tâm ma")+" (có "+S.heal+")";
   $("bHealS").disabled=dead||!S.hurt||S.stone<2;
   
   
   
-  $("bStone").disabled=dead||S.stone<1||S.boost>=3;
-  $("bStone").textContent="Linh thạch hộ pháp ("+S.boost+"/3)";
+  $("bStone").disabled=dead||S.realm>=TOP||S.stone<ptCost()||S.boost>=3;
+  $("bStone").textContent=S.realm>=TOP?"Pháp trận":"Bày "+PT[Math.min(S.realm,8)]+" ("+ptCost()+" linh thạch, tầng "+S.boost+"/3"+(needPT()?", bắt buộc":"")+")";
   const p=S.realm<TOP?(S.tl&&S.realm===1?100:Math.max(5,Math.min(95,Math.round((CHANCE[S.realm]+.1*S.boost+.01*S.legacy-.15*(S.hurt||0))*100)))):0;
   $("bBreak").textContent=dead?"Chuyển thế luân hồi":"Đột phá"+(S.realm<TOP?" ("+p+"%)":"")+(S.fails?" - thất bại "+S.fails+"/3"+(S.fails>=2?", nguy hiểm!":""):"");
-  $("bBreak").disabled=!dead&&!full;
+  $("bBreak").disabled=!dead&&!canBreak();
+  const hint=$("brkHint");
+  if(dead||S.realm>=TOP)hint.textContent="";
+  else{const okp=bdHave()>=1,okt=!needPT()||S.boost>=1;
+    hint.textContent="Điều kiện đột phá: tu vi "+(full?"đủ":"chưa đủ")+"; "+BDAN[S.realm]+" "+bdHave()+"/1"+(needPT()?"; "+PT[S.realm]+" tầng "+S.boost+"/1":"");
+    hint.style.color=(full&&okp&&okt)?"var(--jade)":"var(--seal)"}
   $("log").innerHTML=S.log.map(l=>'<p class="'+l.c+'">'+l.t+'</p>').join("");
 }
-$("bCult").onclick=()=>{cult(1);render();save()};
+$("bCult").onclick=()=>{cult(STEP());render();save()};
 $("bYear").onclick=()=>{
-  const go=()=>bequan();
+  const go=()=>bequan(S.realm>=1?60:12);
   if(S.life<99999&&S.life-age()<=5)askConfirm('Thọ nguyên sắp cạn kiệt, bế quan có nguy cơ tọa hóa! Bạn có chắc chắn muốn bế quan không?',go,'Vẫn bế quan','Hủy');
+  else go();
+};
+$("bYear10").onclick=()=>{
+  const go=()=>bequan(120);
+  if(S.life<99999&&S.life-age()<=10)askConfirm('Thọ nguyên còn không quá 10 năm, bế quan 10 năm có nguy cơ tọa hóa! Bạn có chắc chắn muốn bế quan không?',go,'Vẫn bế quan','Hủy');
   else go();
 };
 $("bExp").onclick=()=>thamhiem();
@@ -161,14 +192,18 @@ $("bHealP").onclick=()=>{healPill();render();save()};
 $("bHealS").onclick=()=>{healStone();render();save()};
 $("bAlch").onclick=()=>{alchemy("qi");render();save()};
 $("bAlchH").onclick=()=>{alchemy("heal");render();save()};
+$("bAlchB").onclick=()=>{alchemy("bd");render();save()};
 $("bPill").onclick=()=>{eatPill();render();save()};
 $("bStone").onclick=()=>{useStone();render();save()};
-$("bBreak").onclick=()=>{if(S.dead)reborn();else if(!tribuOn){tribuOn=true;stopAuto();tribulation()}};
+$("bBreak").onclick=()=>{if(S.dead)reborn();else if(!tribuOn&&canBreak()){tribuOn=true;stopAuto();tribulation()}};
 $("bReset").onclick=()=>{if(!resetArm){resetArm=true;$("bReset").textContent="Bấm lần nữa để xác nhận";setTimeout(()=>{resetArm=false;$("bReset").textContent="Chơi lại từ đầu"},3000);return}resetArm=false;$("bReset").textContent="Chơi lại từ đầu";stopAuto();stopRoll();S=newLife(0,1);render();save()};
-S=null;
+S=load();
 if(!S||!S.root||S.rolls===undefined){S=newLife(0,1)}
 // Bản lưu gần nhất (nếu hợp lệ) được đưa ra làm lựa chọn 'Tiếp tục'; mặc định vẫn là bắt đầu đời mới.
 let SAVED=(()=>{try{const v=load();return v&&typeof v.m==='number'&&v.root&&v.name&&v.rolls!==undefined&&v.heal!==undefined&&v.pill!==undefined&&v.herb!==undefined&&typeof v.life==='number'&&v.realm>=0&&v.realm<=TOP&&!v.rolling?v:null}catch(e){return null}})();
 if(SAVED)$("rCont").textContent='Tiếp tục: '+SAVED.name+' ('+REALMS[SAVED.realm]+', '+Math.floor(SAVED.m/12)+' tuổi'+(SAVED.dead?', đã hết kiếp':'')+')';
+if(S.name)$("nameIn").value=S.name;
+addEventListener("pagehide",save);document.addEventListener("visibilitychange",()=>{if(document.hidden)save()});
+save();
 setTimeout(startAuto,0);
 render();

@@ -6,11 +6,11 @@
 // PASS: biến cố nhỏ tự xảy ra, không cần chọn.
 // nextEv/nextP: thời gian chờ ngẫu nhiên giữa các sự kiện (tính theo tháng).
 const EVENTS=[
- ()=>{const q=gain()*6;S.qi=Math.min(need(),S.qi+q);say("Hái được một gốc linh thảo trăm năm, tu vi tăng "+q+".","g")},
+ ()=>{const q=kyngo(6);S.qi=Math.min(need(),S.qi+q);say("Hái được một gốc linh thảo trăm năm, tu vi tăng "+q+".","g")},
  ()=>{const n=1+rnd(3);S.stone+=n;say("Nhặt được "+n+" khối linh thạch bên khe suối.","g")},
  ()=>{if(Math.random()<.5+S.realm*.05){S.stone+=2;say("Chém giết yêu thú, thu được 2 linh thạch.","g")}else{S.qi=Math.floor(S.qi*.8);hurtUp(1);say("Bị yêu thú đánh trọng thương, hao tổn 20% tu vi và bị thương nhẹ.","b")}},
  ()=>{S.life+=10;say("Gặp một vị cao nhân chỉ điểm, thọ nguyên tăng thêm 10 năm.","y")},
- ()=>{const q=gain()*20;S.qi=Math.min(need(),S.qi+q);say("Tình cờ phát hiện một bí cảnh, thu hoạch rất lớn: tu vi tăng "+q+".","y")},
+ ()=>{const q=kyngo(20);S.qi=Math.min(need(),S.qi+q);say("Tình cờ phát hiện một bí cảnh, thu hoạch rất lớn: tu vi tăng "+q+".","y")},
  ()=>{if(S.stone>0){S.stone--;say("Bị tu sĩ cướp đường, mất 1 linh thạch.","b")}else{S.m+=12;say("Bị truy sát, phải ẩn náu suốt một năm.","b")}},
  ()=>say("Đi cả tháng trời, chỉ thấy núi non trùng điệp."),
  ()=>{const n=1+rnd(2);addHerb(n,1);say("Phát hiện linh thảo mọc trên vách núi, hái được "+n+" gốc.","g")},
@@ -26,8 +26,8 @@ const EV=[
   {l:'Kết giao làm quen',f:()=>{if(Math.random()<.5){S.stone+=2;say('Hắn dễ gần, tặng ngươi 2 linh thạch làm quà gặp mặt.','g')}else say('Hắn lạnh nhạt bỏ đi, ngươi chẳng được gì.')}},
   {l:'Lẳng lặng tránh đi',f:()=>say('Ngươi tránh mặt hắn, không rước họa vào thân.')}]},
  {img:'bicanh',t:'Một bí cảnh cổ xưa hé mở, linh khí cuồn cuộn, nhưng nghe nói nhiều người vào không có ra.',o:[
-  {l:'Tiến vào thám hiểm',f:()=>{const x=Math.random();setTimeout(()=>{if(x<.7&&!S.dead)fxCard({img:'kyngo',card:true,glow:'255,200,70',lines:[S.log[0].t]})},0);if(x<.5){const q=gain()*30;S.qi=Math.min(need(),S.qi+q);say('Ngươi thu hoạch lớn trong bí cảnh, tu vi tăng '+q+'.','y')}else if(x<.7){S.life+=10;say('Trong bí cảnh có di tích cổ, thọ nguyên của ngươi tăng thêm 10 năm.','y')}else{S.qi=Math.floor(S.qi*.75);S.m+=36;say('Ngươi lạc trong bí cảnh ba năm, thoát ra được nhưng mất 25% tu vi.','b')}}},
-  {l:'Không vào, ở lại tĩnh tu',f:()=>{S.qi=Math.min(need(),S.qi+gain()*2);say('Ngươi từ bỏ cơ duyên, ở lại tĩnh tu, tu vi tăng nhẹ.')}}]},
+  {l:'Tiến vào thám hiểm',f:()=>{const x=Math.random();setTimeout(()=>{if(x<.7&&!S.dead)fxCard({img:'kyngo',card:true,glow:'255,200,70',lines:[S.log[0].t]})},0);if(x<.5){const q=kyngo(30);S.qi=Math.min(need(),S.qi+q);say('Ngươi thu hoạch lớn trong bí cảnh, tu vi tăng '+q+'.','y')}else if(x<.7){S.life+=10;say('Trong bí cảnh có di tích cổ, thọ nguyên của ngươi tăng thêm 10 năm.','y')}else{S.qi=Math.floor(S.qi*.75);S.m+=36;say('Ngươi lạc trong bí cảnh ba năm, thoát ra được nhưng mất 25% tu vi.','b')}}},
+  {l:'Không vào, ở lại tĩnh tu',f:()=>{S.qi=Math.min(need(),S.qi+kyngo(2));say('Ngươi từ bỏ cơ duyên, ở lại tĩnh tu, tu vi tăng nhẹ.')}}]},
  {t:'Một lão giả bày quán ven đường, rao bán một bộ công pháp cổ.',o:[
   {l:'Bỏ 2 linh thạch mua công pháp (thật 70%)',ok:()=>S.stone>=2,f:()=>{S.stone-=2;if(Math.random()<.7){S.mult=Math.round(S.mult*115)/100;say('Công pháp là thật, tốc độ tu luyện vĩnh viễn tăng 15% (x'+S.mult+').','y')}else say('Công pháp là đồ giả, ngươi mất 2 linh thạch.','b')}},
   {l:'Không mua',f:()=>say('Ngươi lắc đầu bỏ đi.')}]},
@@ -40,7 +40,7 @@ const EV=[
   {l:'Cho ông ta 1 Hồi Thương Đan',ok:()=>S.heal>=1,f:()=>{S.heal--;if(Math.random()<.5){S.life+=15;say('Lão giả hóa ra là cao nhân ẩn mình, chỉ điểm giúp thọ nguyên của ngươi tăng thêm 15 năm.','y')}else say('Ông ta uống đan rồi lặng lẽ đi mất, ngươi chẳng nhận được gì.')}},
   {l:'Làm ngơ',f:()=>say('Ngươi bước qua, không ngoảnh lại.')}]},
  {t:'Ngươi tình cờ phát hiện một hang động bí ẩn, từ bên trong tỏa ra linh khí nhàn nhạt. Có vào khám phá hay không?',o:[
-  {l:'Vào khám phá',f:()=>{const x=Math.random();if(x<.4){const q=gain()*12;S.qi=Math.min(need(),S.qi+q);S.stone+=2;say('Trong hang có di vật của một vị tiền bối, ngươi thu được '+q+' tu vi và 2 linh thạch.','y')}else if(x<.7){addHerb(3,1);say('Cuối hang mọc đầy linh thảo, ngươi hái được 3 gốc.','g')}else{S.qi=Math.floor(S.qi*.7);S.m+=24;say('Hang động có độc trùng và cấm chế, ngươi thoát ra sau hai năm, mất 30% tu vi.','b')}}},
+  {l:'Vào khám phá',f:()=>{const x=Math.random();if(x<.4){const q=kyngo(12);S.qi=Math.min(need(),S.qi+q);S.stone+=2;say('Trong hang có di vật của một vị tiền bối, ngươi thu được '+q+' tu vi và 2 linh thạch.','y')}else if(x<.7){addHerb(3,1);say('Cuối hang mọc đầy linh thảo, ngươi hái được 3 gốc.','g')}else{S.qi=Math.floor(S.qi*.7);S.m+=24;say('Hang động có độc trùng và cấm chế, ngươi thoát ra sau hai năm, mất 30% tu vi.','b')}}},
   {l:'Không vào',f:()=>say('Ngươi nhìn hang động một lúc rồi quay đi. Cẩn thận mới sống lâu.')}]},
  {t:'Ngươi thấy một ngôi miếu cổ đổ nát, bên trong có bức tượng đá tỏa ánh sáng lạ. Có vào bái lạy không?',o:[
   {l:'Vào bái lạy',f:()=>{const x=Math.random();if(x<.5){S.life+=8;say('Tuợng đá phát sáng, ban cho ngươi thọ nguyên tăng thêm 8 năm.','y')}else if(x<.8){S.stone+=1;say('Ngươi nhặt được 1 linh thạch dưới chân tượng.','g')}else{S.qi=Math.floor(S.qi*.85);S.m+=12;say('Miếu có tà khí, ngươi bị ám và phải dưỡng thương một năm, mất 15% tu vi.','b')}}},
@@ -56,13 +56,13 @@ const EV=[
   {l:'Nhận lời',f:()=>{S.stone+=3;S.m+=24;say('Ngươi làm việc cho tông môn hai năm, nhận 3 linh thạch và 1 viên '+giveDan()+'.','g')}},
   {l:'Từ chối',f:()=>say('Ngươi khéo léo từ chối, vẫn một mình tu hành.')}]},
  {c:()=>S.realm>=2,t:'Một tu sĩ cùng cảnh giới mời ngươi luận đạo, hẹn chỉ điểm lẫn nhau.',o:[
-  {l:'Nhận lời luận đạo',f:()=>{if(Math.random()<.6){const q=gain()*10;S.qi=Math.min(need(),S.qi+q);say('Luận đạo ba ngày, ngươi ngộ ra nhiều điều, tu vi tăng '+q+'.','y')}else{S.qi=Math.floor(S.qi*.9);hurtUp(1);say('Đối phương thử sức quá nặng, ngươi bị thương nhẹ và mất 10% tu vi.','b')}}},
+  {l:'Nhận lời luận đạo',f:()=>{if(Math.random()<.6){const q=kyngo(10);S.qi=Math.min(need(),S.qi+q);say('Luận đạo ba ngày, ngươi ngộ ra nhiều điều, tu vi tăng '+q+'.','y')}else{S.qi=Math.floor(S.qi*.9);hurtUp(1);say('Đối phương thử sức quá nặng, ngươi bị thương nhẹ và mất 10% tu vi.','b')}}},
   {l:'Từ chối khéo',f:()=>say('Ngươi viện cớ bế quan, khéo léo từ chối.')}]},
  {c:()=>S.realm>=3,t:'Ngươi tìm thấy một ngọc giản cổ ghi công pháp thất truyền, nhưng cần ba năm tham ngộ mới hiểu hết.',o:[
   {l:'Dành ba năm tham ngộ (thành công 70%)',f:()=>{S.m+=36;if(Math.random()<.7){S.mult=Math.round(S.mult*110)/100;say('Tham ngộ thành công, tốc độ tu luyện vĩnh viễn tăng 10% (x'+S.mult+').','y')}else say('Ba năm trôi qua, ngươi chẳng ngộ ra được gì.','b')}},
   {l:'Cất đi, để dành lúc khác',f:()=>say('Ngươi cất ngọc giản vào túi trữ vật.')}]},
  {c:()=>S.realm>=5,t:'Thiên địa dị tượng: linh khí trời đất bỗng bạo động, cuồn cuộn đổ về quanh ngươi.',o:[
-  {l:'Nhân cơ hội hấp thụ linh khí',f:()=>{const q=gain()*40;S.qi=Math.min(need(),S.qi+q);if(Math.random()<.25){hurtUp(2);say('Linh khí quá bạo liệt, kinh mạch ngươi tổn thương dù tu vi tăng '+q+'.','b')}else say('Ngươi hấp thụ trọn linh khí, tu vi tăng '+q+'.','y')}},
+  {l:'Nhân cơ hội hấp thụ linh khí',f:()=>{const q=kyngo(40);S.qi=Math.min(need(),S.qi+q);if(Math.random()<.25){hurtUp(2);say('Linh khí quá bạo liệt, kinh mạch ngươi tổn thương dù tu vi tăng '+q+'.','b')}else say('Ngươi hấp thụ trọn linh khí, tu vi tăng '+q+'.','y')}},
   {l:'Tránh xa, chờ yên',f:()=>say('Ngươi lùi ra xa, đợi dị tượng tan đi.')}]},
  {c:()=>S.realm>=6,t:'Một tu sĩ cường đại phát hiện ngươi mang bảo vật quý và đuổi theo.',o:[
   {l:'Dốc toàn lực chống trả (thắng 50%)',f:()=>{if(Math.random()<.5){addHerb(3,3);S.stone+=5;say('Ngươi đánh lui kẻ địch, thu được 3 linh thảo thượng phẩm và 5 linh thạch.','y')}else{S.qi=Math.floor(S.qi*.6);hurtUp(2);say('Ngươi bại trận, mất 40% tu vi và bị trọng thương.','b')}}},
@@ -80,15 +80,17 @@ function giveDan(){if(Math.random()<.5){S.heal++;return 'Hồi Thương Đan'}S.
 function stoneBonus(s0){const d=S.stone-s0,k=Math.floor(S.realm/2);if(d>0&&k>0){const x=d*k;S.stone+=x;say('Cơ duyên ở cảnh giới cao dày hơn: nhận thêm '+x+' linh thạch.','y')}}
 function raiseEvent(){const ok=[];EV.forEach((e,i)=>{if(!e.c||e.c())ok.push(i)});S.ev=ok[rnd(ok.length)];S.evT=nextEv();stopAuto()}
 function pick(i){const o=EV[S.ev].o[i];if(o.ok&&!o.ok())return;S.ev=null;const s0=S.stone;o.f();if(!o.nb)stoneBonus(s0);if(!S.dead&&age()>=S.life)die();render();save();startAuto()}
-const nextEv=()=>Math.max(6,Math.round(-Math.log(1-Math.random())*72));
-const nextP=()=>Math.max(2,Math.round(-Math.log(1-Math.random())*30));
+// Phần thưởng tu vi từ kỳ ngộ: tính theo % thanh tu vi, cảnh giới càng cao kỳ ngộ càng quan trọng.
+function kyngo(n){return Math.floor(need()*n*0.0015*(1+.4*S.realm))}
+const nextEv=()=>Math.max(6,Math.round(-Math.log(1-Math.random())*72*STEP()));
+const nextP=()=>Math.max(2,Math.round(-Math.log(1-Math.random())*30*STEP()));
 const PASS=[
- ()=>{const q=gain()*3;S.qi=Math.min(need(),S.qi+q);say('Linh khí quanh núi bất chợt dồi dào, tu vi tăng '+q+'.','g')},
+ ()=>{const q=kyngo(3);S.qi=Math.min(need(),S.qi+q);say('Linh khí quanh núi bất chợt dồi dào, tu vi tăng '+q+'.','g')},
  ()=>{S.qi=Math.floor(S.qi*.97);say('Năm nay đại hạn, linh khí loãng đi, tu vi hao nhẹ.','b')},
  ()=>{S.stone++;say('Ngươi nhặt được 1 linh thạch bên đường.','g')},
  ()=>say('Nghe tin một tông môn nhỏ bị diệt môn, ngươi càng thêm cẩn trọng.'),
  ()=>{if(!S.hurt){hurtUp(1);say('Trúng phải độc khí nơi đầm lầy, ngươi bị thương nhẹ.','b')}else say('Trời đổ mưa suốt nửa tháng, thương thế của ngươi nhức nhối.')},
- ()=>{const q=gain()*2;S.qi=Math.min(need(),S.qi+q);say('Nhìn sao băng vụt qua, tâm cảnh thông suốt, tu vi tăng '+q+'.','g')},
+ ()=>{const q=kyngo(2);S.qi=Math.min(need(),S.qi+q);say('Nhìn sao băng vụt qua, tâm cảnh thông suốt, tu vi tăng '+q+'.','g')},
  ()=>say('Một đạo hữu quen biết năm xưa đã qua đời, ngươi lặng người nhìn trời.')
 ];
 function passive(){const s0=S.stone;PASS[rnd(PASS.length)]();stoneBonus(s0)}

@@ -12,7 +12,8 @@ function avgQ(){return S.herb>0?Math.max(0,Math.min(4,(S.hqs||0)/S.herb)):1}
 // Đan dược: g là độ khó (phẩm cấp càng cao càng khó luyện). Công dụng đan không đổi.
 const DAN={qi:{n:'Tụ Linh Đan',g:1,rank:'Nhất phẩm'},heal:{n:'Hồi Thương Đan',g:2,rank:'Nhị phẩm'}};
 const TQ=['Thường','Thượng phẩm','Cực phẩm','Dị tượng'];
-function alchP(k){return Math.max(.15,Math.min(.92,.45+.05*S.alch+.06*(avgQ()-1)-.04*(DAN[k].g-1)-.02*S.realm))}
+// Đan đột phá (k='bd') là đan cấp cao nhất của cảnh giới nên khó nhất: độ khó tăng gấp đôi theo cảnh giới.
+function alchP(k){const G=k==='bd'?2+2*S.realm:DAN[k].g;return Math.max(.15,Math.min(.92,.45+.05*S.alch+.06*(avgQ()-1)-.04*(G-1)-.02*S.realm))}
 
 // ---------- hình vẽ từng giai đoạn ----------
 function plantArt(col){return i=>{
@@ -46,22 +47,23 @@ function plant(){
 // ---------- luyện đan ----------
 function alchemy(kind){
   kind=kind||'qi';
-  if(S.dead||fxBusy||S.herb<3)return;
-  const D=DAN[kind],p=alchP(kind),aq=avgQ();
-  S.hqs=Math.max(0,(S.hqs||0)-3*aq);S.herb-=3;
-  const ok=Math.random()<p,use='Tiêu hao: 3 linh thảo (phẩm chất trung bình: '+QN[Math.round(aq)]+')',rate='Tỉ lệ thành công: '+Math.round(p*100)+'%';
+  const H=kind==='bd'?bdHerbs():3;
+  if(S.dead||fxBusy||S.herb<H||(kind==='bd'&&S.realm>=TOP))return;
+  const D=kind==='bd'?{n:BDAN[S.realm],g:2+2*S.realm,rank:'Đan đột phá'}:DAN[kind],p=alchP(kind),aq=avgQ();
+  S.hqs=Math.max(0,(S.hqs||0)-H*aq);S.herb-=H;
+  const ok=Math.random()<p,use='Tiêu hao: '+H+' linh thảo (phẩm chất trung bình: '+QN[Math.round(aq)]+')',rate='Tỉ lệ thành công: '+Math.round(p*100)+'%';
   const caps=['Nhóm linh hỏa dưới lò đan...','Đưa linh thảo vào lò...','Dược lực ngưng tụ, đan khí cuồn cuộn...','Mở lò!'];
   let res;
   if(ok){
     const x=Math.random(),tier=x<.02?3:x<.08?2:x<.30?1:0,n=1+[0,0,1,2][tier];
-    if(kind==='heal')S.heal+=n;else S.pill+=n;S.alch++;
+    if(kind==='heal')S.heal+=n;else if(kind==='bd'){S.bdp=S.bdp||{};S.bdp[S.realm]=(S.bdp[S.realm]||0)+n}else S.pill+=n;S.alch++;
     say('Luyện thành công '+n+' viên '+D.n+' ('+TQ[tier]+').',tier>=2?'y':'g');
     res={img:tier>=2?'ok':'ldOk',card:tier<2,glow:QC[tier+1],filter:'',title:tier===3?'Dị tượng xuất hiện! Đan thành cực phẩm!':tier===2?'Đan thành cực phẩm!':'Luyện đan thành công!',
       lines:['Đan dược: '+D.n,'Phẩm cấp: '+D.rank,'Phẩm chất: '+TQ[tier],'Số lượng: +'+n+' viên',use,rate,'Kinh nghiệm luyện đan: +1']};
   }else{
     const boom=Math.random()<.25;
     if(boom)hurtUp(1);
-    say(boom?'Lò đan nổ tung, mất 3 linh thảo và bị thương nhẹ.':'Lửa tắt, đan không thành, mất 3 linh thảo.','b');
+    say(boom?'Lò đan nổ tung, mất '+H+' linh thảo và bị thương nhẹ.':'Lửa tắt, đan không thành, mất '+H+' linh thảo.','b');
     res={img:boom?'ldFail':'fail',card:boom,glow:boom?'255,70,60':'150,110,200',filter:boom?'saturate(1.4) hue-rotate(-15deg)':'',bad:true,boom:boom,title:boom?'Lò đan nổ tung!':'Lửa tắt, đan không thành',
       lines:['Đan dược: '+D.n,'Phẩm cấp: '+D.rank,use+' (mất trắng)',rate].concat(boom?['Hậu quả: bị thương nhẹ.']:['Linh thảo đã bị cháy hỏng.'])};
   }

@@ -17,20 +17,22 @@ function tribulation(){
   let flash=0,i=0,col=K.c,run=true;const live=[];
   ov.hidden=false;ov.className=reduce?'':'shake';
   tx.textContent=K.n+': mây kiếp tụ lại trên đầu ngươi...';
+  const bolts=[];
   function glow(p,w){g.save();g.lineJoin='round';g.shadowColor='rgb('+col+')';g.shadowBlur=18+r*3;g.strokeStyle='#fff';g.lineWidth=w;g.beginPath();g.moveTo(p[0][0],p[0][1]);p.slice(1).forEach(q=>g.lineTo(q[0],q[1]));g.stroke();g.restore()}
   function bolt(){
     const pts=[[W*(.1+Math.random()*.8),0]];let y=0,x=pts[0][0];
     while(y<H*.9){y+=H*(.04+Math.random()*.06);x+=(Math.random()-.5)*W*.12;pts.push([x,y])}
-    const grp=[[pts,thick]];
-    for(let b=0;b<3;b++){const s=pts[1+rnd(pts.length-2)],br=[s];let bx=s[0],by=s[1];for(let k=0;k<4;k++){bx+=(Math.random()-.5)*W*.14;by+=H*.05;br.push([bx,by])}grp.push([br,thick*.45])}live.push({g:grp,a:0});
+    const o={l:[[pts,thick]],life:1};
+    for(let b=0;b<3;b++){const s=pts[1+rnd(pts.length-2)],br=[s];let bx=s[0],by=s[1];for(let k=0;k<4;k++){bx+=(Math.random()-.5)*W*.14;by+=H*.05;br.push([bx,by])}o.l.push([br,thick*.45])}
+    bolts.push(o);
   }
-  function strike(){for(let k=0;k<multi;k++)bolt();flash=reduce?.2:Math.min(.4,.25+r*.015)}
+  function strike(){for(let k=0;k<multi;k++)bolt();flash=Math.min(.7,(reduce?.3:.4)+r*.03)}
+  // Mỗi khung hình: nền tối, mây, ánh chớp, rồi mới vẽ tia sét lên trên (sét mờ dần theo thời gian).
   function frame(){
-    g.fillStyle='rgba(5,8,14,.14)';g.fillRect(0,0,W,H);
-    for(let c=0;c<5;c++){const cx=W*(c/4),rad=Math.max(W,H)*.35,gr=g.createRadialGradient(cx,0,0,cx,0,rad);gr.addColorStop(0,'rgba(60,70,95,.10)');gr.addColorStop(1,'rgba(60,70,95,0)');g.fillStyle=gr;g.fillRect(0,0,W,H)}
-    if(flash>0){g.fillStyle='rgba('+col+','+flash+')';g.fillRect(0,0,W,H);flash*=.85;if(flash<.02)flash=0}
-    for(let k=live.length-1;k>=0;k--){const o=live[k];g.globalAlpha=Math.max(0,1-o.a/12);o.g.forEach(q=>glow(q[0],q[1]));if(++o.a>12)live.splice(k,1)}
-    g.globalAlpha=1;
+    g.fillStyle='#05080e';g.fillRect(0,0,W,H);
+    for(let c=0;c<5;c++){const cx=W*(c/4),rad=Math.max(W,H)*.4,gr=g.createRadialGradient(cx,0,0,cx,0,rad);gr.addColorStop(0,'rgba(60,70,95,.55)');gr.addColorStop(1,'rgba(60,70,95,0)');g.fillStyle=gr;g.fillRect(0,0,W,H)}
+    if(flash>0){g.fillStyle='rgba('+col+','+flash+')';g.fillRect(0,0,W,H);flash*=.88;if(flash<.02)flash=0}
+    for(let k=bolts.length-1;k>=0;k--){const o=bolts[k];g.globalAlpha=Math.min(1,o.life*1.6);o.l.forEach(q=>glow(q[0],q[1]));g.globalAlpha=1;o.life-=.06;if(o.life<=0)bolts.splice(k,1)}
     if(run)requestAnimationFrame(frame);
   }
   g.fillStyle='#05080e';g.fillRect(0,0,W,H);frame();
